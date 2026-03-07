@@ -1185,14 +1185,14 @@
       btn.textContent = "Creating...";
       btn.disabled = true;
 
-      fetch("https://jsonblob.com/api/jsonBlob", {
+      fetch("/.netlify/functions/sync", {
         method: "POST",
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify([])
-      }).then(function(r) {
-        var location = r.headers.get("Location");
-        if (location) {
-          cloudRoomId = location.split("/").pop();
+      }).then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.id) {
+          cloudRoomId = data.id;
           localStorage.setItem("mathCloudRoom", cloudRoomId);
           syncToCloud();
           updateSyncStatus();
@@ -1203,7 +1203,7 @@
           btn.disabled = false;
         }
       }).catch(function(e) {
-        alert("Error connecting to cloud. Check your internet!");
+        alert("Error connecting to cloud. Try again!");
         btn.textContent = "Create Room";
         btn.disabled = false;
       });
@@ -1216,9 +1216,8 @@
       }
       if (!input) { alert("Paste a link or room code first!"); return; }
 
-      fetch("https://jsonblob.com/api/jsonBlob/" + input, {
-        headers: {"Accept": "application/json"}
-      }).then(function(r) {
+      fetch("/.netlify/functions/sync?id=" + input)
+      .then(function(r) {
         if (r.ok) {
           cloudRoomId = input;
           localStorage.setItem("mathCloudRoom", cloudRoomId);
@@ -1230,7 +1229,7 @@
           alert("Room not found! Check the code and try again.");
         }
       }).catch(function(e) {
-        alert("Error connecting. Check your internet!");
+        alert("Error connecting. Try again!");
       });
     }
 
@@ -1269,16 +1268,15 @@
       isSyncing = true;
       var localData = getLeaderboard();
 
-      fetch("https://jsonblob.com/api/jsonBlob/" + cloudRoomId, {
-        headers: {"Accept": "application/json"}
-      }).then(function(r) { return r.json(); })
+      fetch("/.netlify/functions/sync?id=" + cloudRoomId)
+      .then(function(r) { return r.json(); })
       .then(function(cloudData) {
         if (!Array.isArray(cloudData)) cloudData = [];
         var merged = mergeLeaderboards(localData, cloudData);
         localStorage.setItem("mathGameLeaderboard", JSON.stringify(merged));
-        return fetch("https://jsonblob.com/api/jsonBlob/" + cloudRoomId, {
+        return fetch("/.netlify/functions/sync?id=" + cloudRoomId, {
           method: "PUT",
-          headers: {"Content-Type": "application/json", "Accept": "application/json"},
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify(merged)
         });
       }).then(function() {
@@ -1290,9 +1288,8 @@
 
     function syncFromCloud(callback) {
       if (!cloudRoomId) { if (callback) callback(); return; }
-      fetch("https://jsonblob.com/api/jsonBlob/" + cloudRoomId, {
-        headers: {"Accept": "application/json"}
-      }).then(function(r) { return r.json(); })
+      fetch("/.netlify/functions/sync?id=" + cloudRoomId)
+      .then(function(r) { return r.json(); })
       .then(function(cloudData) {
         if (!Array.isArray(cloudData)) cloudData = [];
         var localData = getLeaderboard();
