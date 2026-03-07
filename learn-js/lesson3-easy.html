@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 3 - If / Else (Easy!)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #f9e64f; font-size: 32px; }
+    h2 { color: #89dceb; font-size: 24px; margin-top: 40px; }
+    p { font-size: 22px; line-height: 1.8; }
+
+    .step-number {
+      background-color: #f9e64f;
+      color: #1e1e2e;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 22px;
+      margin-right: 10px;
+    }
+
+    .story-box {
+      background-color: #313244;
+      border-left: 6px solid #f9e64f;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 24px;
+      line-height: 2;
+    }
+
+    .explain {
+      background-color: #313244;
+      border-left: 6px solid #cba6f7;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 22px;
+      line-height: 1.8;
+    }
+
+    .highlight { color: #f9e64f; font-weight: bold; }
+    .green { color: #a6e3a1; font-weight: bold; }
+    .pink { color: #f38ba8; font-weight: bold; }
+
+    .big-btn {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 10px 10px 0;
+    }
+
+    .big-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .result-box {
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      font-size: 26px;
+      font-weight: bold;
+      text-align: center;
+      min-height: 30px;
+    }
+
+    .result-yes {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+    }
+
+    .result-no {
+      background-color: #f38ba8;
+      color: #1e1e2e;
+    }
+
+    .door {
+      font-size: 80px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 10px 20px;
+      transition: transform 0.2s;
+    }
+
+    .door:hover {
+      transform: scale(1.2);
+    }
+
+    .hidden { display: none; }
+
+    .scene {
+      background-color: #313244;
+      border: 3px solid #89dceb;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .weather-icon {
+      font-size: 100px;
+      display: block;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 3: If / Else &#129504;</h1>
+
+  <!-- ==================== -->
+  <!-- STEP 1: THE IDEA     -->
+  <!-- ==================== -->
+  <h2><span class="step-number">1</span> The Idea</h2>
+
+  <p><b>If / Else</b> is just the computer asking a <b>YES or NO</b> question.</p>
+
+  <div class="story-box">
+    <p>Think of it like this:</p>
+    <p>Your mom asks: <b>"Did you finish your homework?"</b></p>
+    <p class="green">If YES → "You can play games!" &#127918;</p>
+    <p class="pink">If NO → "Go finish it first!" &#128218;</p>
+  </div>
+
+  <p>That's it! The computer asks a question. If the answer is <b>YES</b>, it does one thing. If <b>NO</b>, it does something else.</p>
+
+  <!-- ==================== -->
+  <!-- STEP 2: WEATHER      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">2</span> Try It: What's the Weather?</h2>
+
+  <p>Click a weather to see what the computer decides:</p>
+
+  <div class="scene">
+    <p>The computer asks: <b>"Is it raining?"</b></p>
+
+    <div>
+      <span class="door" onclick="weatherPick('rain')">&#127783;</span>
+      <span class="door" onclick="weatherPick('sun')">&#9728;&#65039;</span>
+    </div>
+    <p style="font-size: 18px; color: #888;">(Click one!)</p>
+
+    <div id="weatherResult" class="hidden"></div>
+    <div id="weatherCode" class="hidden"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 3: NUMBER GAME  -->
+  <!-- ==================== -->
+  <h2><span class="step-number">3</span> Try It: Big or Small?</h2>
+
+  <p>Click a number. The computer will check: <b>"Is this number bigger than 5?"</b></p>
+
+  <div class="scene">
+    <p>The computer asks: <b>"Is the number > 5?"</b></p>
+    <p style="font-size: 18px; color: #888;">(> means "bigger than")</p>
+
+    <div>
+      <button class="big-btn" onclick="numberPick(2)" style="font-size: 30px; margin: 5px;">2</button>
+      <button class="big-btn" onclick="numberPick(5)" style="font-size: 30px; margin: 5px;">5</button>
+      <button class="big-btn" onclick="numberPick(8)" style="font-size: 30px; margin: 5px;">8</button>
+      <button class="big-btn" onclick="numberPick(3)" style="font-size: 30px; margin: 5px;">3</button>
+      <button class="big-btn" onclick="numberPick(10)" style="font-size: 30px; margin: 5px;">10</button>
+    </div>
+
+    <div id="numberResult" class="hidden"></div>
+    <div id="numberCode" class="hidden"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 4: GUESS GAME   -->
+  <!-- ==================== -->
+  <h2><span class="step-number">4</span> Try It: Guess the Animal!</h2>
+
+  <p>The computer is thinking of an animal. Guess which one!</p>
+  <p>The computer checks: <b>"Is the guess the same as my answer?"</b></p>
+
+  <div class="scene">
+    <p style="font-size: 30px;">&#129300; I'm thinking of an animal...</p>
+    <p>Which one is it?</p>
+
+    <div>
+      <span class="door" onclick="animalGuess('cat')">&#128049;</span>
+      <span class="door" onclick="animalGuess('dog')">&#128054;</span>
+      <span class="door" onclick="animalGuess('rabbit')">&#128048;</span>
+    </div>
+    <p style="font-size: 18px; color: #888;">(Click one to guess!)</p>
+
+    <div id="animalResult" class="hidden"></div>
+    <div id="animalCode" class="hidden"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 5: QUIZ         -->
+  <!-- ==================== -->
+  <h2><span class="step-number">5</span> Quick Quiz!</h2>
+
+  <div class="story-box">
+    <p>If the computer runs this code:</p>
+    <p style="font-family: Courier New; color: #a6e3a1; font-size: 22px; background: #45475a; padding: 15px; border-radius: 8px;">
+      let age = 10;<br><br>
+      if (age > 18) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;show "You are an adult"<br>
+      } else {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;show "You are a kid"<br>
+      }
+    </p>
+    <p>What will the computer show?</p>
+  </div>
+
+  <button class="big-btn" onclick="quiz('adult')" style="background-color: #89dceb;">A) "You are an adult"</button>
+  <button class="big-btn" onclick="quiz('kid')" style="background-color: #89dceb;">B) "You are a kid"</button>
+
+  <div id="quizResult"></div>
+
+  <!-- ==================== -->
+  <!-- WHAT YOU LEARNED     -->
+  <!-- ==================== -->
+  <h2>What You Learned &#127891;</h2>
+  <div class="explain">
+    <p><span class="highlight">if / else</span> = the computer asks a YES or NO question</p>
+    <p><span class="green">YES?</span> → Do the first thing</p>
+    <p><span class="pink">NO?</span> → Do the other thing</p>
+    <p>That's all it is!</p>
+  </div>
+
+  <p style="font-size: 22px; margin-top: 20px;">
+    Tell me when you're ready and we'll move on! &#127881;
+  </p>
+
+  <script>
+    // --- Weather ---
+    function weatherPick(choice) {
+      var resultDiv = document.getElementById("weatherResult");
+      var codeDiv = document.getElementById("weatherCode");
+      resultDiv.className = "";
+      codeDiv.className = "";
+
+      if (choice === "rain") {
+        resultDiv.innerHTML = '<div class="result-box result-yes">&#9745; YES it\'s raining → Take an umbrella! &#9748;</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer did this:</p>' +
+          '<p style="font-family: Courier New; color: #a6e3a1;">if (weather === "rain") &#10004;</p>' +
+          '<p>The answer was <b>YES</b>, so it picked the <b>first</b> option!</p></div>';
+      } else {
+        resultDiv.innerHTML = '<div class="result-box result-no">&#9746; NO it\'s not raining → Wear sunglasses! &#128526;</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer did this:</p>' +
+          '<p style="font-family: Courier New; color: #f38ba8;">if (weather === "rain") &#10008;</p>' +
+          '<p>The answer was <b>NO</b>, so it picked the <b>else</b> option!</p></div>';
+      }
+    }
+
+    // --- Number ---
+    function numberPick(num) {
+      var resultDiv = document.getElementById("numberResult");
+      var codeDiv = document.getElementById("numberCode");
+      resultDiv.className = "";
+      codeDiv.className = "";
+
+      if (num > 5) {
+        resultDiv.innerHTML = '<div class="result-box result-yes">&#9745; YES! ' + num + ' is bigger than 5!</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer checked: <b>Is ' + num + ' > 5?</b></p>' +
+          '<p>Answer: <b style="color:#a6e3a1;">YES!</b> So it runs the <b>if</b> part.</p></div>';
+      } else {
+        resultDiv.innerHTML = '<div class="result-box result-no">&#9746; NO! ' + num + ' is NOT bigger than 5!</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer checked: <b>Is ' + num + ' > 5?</b></p>' +
+          '<p>Answer: <b style="color:#f38ba8;">NO!</b> So it runs the <b>else</b> part.</p></div>';
+      }
+    }
+
+    // --- Animal ---
+    var secretAnimal = "dog";
+
+    function animalGuess(guess) {
+      var resultDiv = document.getElementById("animalResult");
+      var codeDiv = document.getElementById("animalCode");
+      resultDiv.className = "";
+      codeDiv.className = "";
+
+      if (guess === secretAnimal) {
+        resultDiv.innerHTML = '<div class="result-box result-yes">&#127881; YES! It was the dog! &#128054; You got it!</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer checked: <b>Is "' + guess + '" the same as "dog"?</b></p>' +
+          '<p>Answer: <b style="color:#a6e3a1;">YES!</b></p></div>';
+      } else {
+        var animalEmoji = guess === "cat" ? "&#128049;" : "&#128048;";
+        resultDiv.innerHTML = '<div class="result-box result-no">&#128533; NO! It was not the ' + guess + '! ' + animalEmoji + ' Try again!</div>';
+        codeDiv.innerHTML = '<div class="explain" style="text-align:left; font-size:18px;">' +
+          '<p>The computer checked: <b>Is "' + guess + '" the same as "dog"?</b></p>' +
+          '<p>Answer: <b style="color:#f38ba8;">NO!</b> So it runs the <b>else</b> part.</p></div>';
+      }
+    }
+
+    // --- Quiz ---
+    function quiz(answer) {
+      var resultDiv = document.getElementById("quizResult");
+      if (answer === "kid") {
+        resultDiv.innerHTML = '<div class="result-box result-yes" style="margin-top:15px;">&#127881; CORRECT! Age is 10, and 10 is NOT bigger than 18, so the computer goes to the ELSE part and shows "You are a kid"!</div>';
+      } else {
+        resultDiv.innerHTML = '<div class="result-box result-no" style="margin-top:15px;">Not quite! Age is 10. Is 10 bigger than 18? NO! So the computer skips the first part and goes to ELSE. Try again!</div>';
+      }
+    }
+  </script>
+
+</body>
+</html>

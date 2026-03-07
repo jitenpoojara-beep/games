@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Game!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== SCREENS ===== */
+    .screen { display: none; padding: 25px; text-align: center; }
+    .screen.active { display: block; }
+
+    /* ===== COMMON ===== */
+    .game-title { font-size: 48px; color: #f9e64f; margin-bottom: 5px; }
+    .game-subtitle { font-size: 20px; color: #89dceb; margin-bottom: 20px; }
+    .section-label { font-size: 20px; color: #cba6f7; margin: 20px 0 10px 0; }
+
+    .name-input {
+      padding: 14px; font-size: 22px; border-radius: 15px; border: 3px solid #89dceb;
+      background-color: #45475a; color: #a6e3a1; width: 280px; text-align: center;
+      display: block; margin: 0 auto 10px auto;
+    }
+    .name-input::placeholder { color: #888; }
+
+    /* Buttons */
+    .btn {
+      border: none; padding: 16px 35px; font-size: 22px; border-radius: 15px;
+      cursor: pointer; font-weight: bold; margin: 8px; transition: all 0.2s; display: inline-block;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .btn-green { background-color: #a6e3a1; color: #1e1e2e; }
+    .btn-green:hover { background-color: #c6f0c2; }
+    .btn-yellow { background-color: #f9e64f; color: #1e1e2e; }
+    .btn-yellow:hover { background-color: #fef08a; }
+    .btn-purple { background-color: #cba6f7; color: #1e1e2e; }
+    .btn-purple:hover { background-color: #e0c8fc; }
+    .btn-blue { background-color: #89dceb; color: #1e1e2e; }
+    .btn-blue:hover { background-color: #b0eaf5; }
+    .btn-pink { background-color: #f38ba8; color: #1e1e2e; }
+    .btn-pink:hover { background-color: #f5a3b8; }
+    .btn-small { padding: 10px 20px; font-size: 16px; border-radius: 12px; }
+
+    /* Topic grid */
+    .topic-grid {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 10px; max-width: 620px; margin: 0 auto;
+    }
+    .topic-btn {
+      padding: 12px 18px; font-size: 16px; border: 3px solid #45475a; border-radius: 15px;
+      cursor: pointer; font-weight: bold; background-color: #313244; color: #fff;
+      transition: all 0.2s; min-width: 120px;
+    }
+    .topic-btn:hover { transform: scale(1.05); border-color: #89dceb; }
+    .topic-btn.selected { border-color: #a6e3a1; background-color: #45475a; box-shadow: 0 0 15px rgba(166,227,161,0.3); }
+    .topic-emoji { font-size: 22px; display: block; margin-bottom: 3px; }
+    .topic-name { font-size: 14px; }
+
+    /* Difficulty */
+    .diff-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .diff-btn {
+      padding: 14px 28px; font-size: 18px; border: 3px solid transparent; border-radius: 15px;
+      cursor: pointer; font-weight: bold; transition: all 0.2s;
+    }
+    .diff-btn:hover { transform: scale(1.05); }
+    .diff-easy { background-color: #a6e3a1; color: #1e1e2e; }
+    .diff-medium { background-color: #f9e64f; color: #1e1e2e; }
+    .diff-hard { background-color: #f38ba8; color: #1e1e2e; }
+    .diff-btn.selected { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+
+    #startError { color: #f38ba8; font-size: 18px; margin-top: 10px; }
+
+    /* Sound toggle */
+    .sound-toggle {
+      position: fixed; top: 15px; right: 15px; z-index: 100;
+      background-color: #313244; border: 2px solid #45475a; border-radius: 50%;
+      width: 45px; height: 45px; font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .sound-toggle:hover { border-color: #89dceb; }
+
+    /* ===== GAME SCREEN ===== */
+    .top-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 20px; background-color: #313244; flex-wrap: wrap; gap: 6px;
+    }
+    .player-name { font-size: 18px; color: #89dceb; }
+    .score-text { font-size: 20px; color: #f9e64f; font-weight: bold; }
+    .timer-text { font-size: 18px; color: #cba6f7; font-weight: bold; }
+    .lives-text { font-size: 20px; }
+    .topic-tag {
+      font-size: 14px; color: #1e1e2e; background-color: #89dceb;
+      padding: 3px 10px; border-radius: 8px; font-weight: bold;
+    }
+
+    /* Level bar */
+    .level-bar {
+      background-color: #313244; padding: 8px 20px;
+      display: flex; align-items: center; justify-content: center; gap: 15px;
+    }
+    .level-text { font-size: 20px; color: #f9e64f; font-weight: bold; }
+    .xp-track {
+      background-color: #45475a; border-radius: 10px; height: 16px;
+      width: 200px; overflow: hidden; position: relative;
+    }
+    .xp-fill {
+      background: linear-gradient(90deg, #cba6f7, #f9e64f); height: 100%;
+      border-radius: 10px; transition: width 0.5s; width: 0%;
+    }
+    .xp-text { font-size: 14px; color: #888; }
+
+    .game-area { padding: 20px; text-align: center; max-width: 600px; margin: 0 auto; }
+    .question-number { font-size: 14px; color: #888; margin-bottom: 5px; }
+    .question {
+      font-size: 48px; color: #f9e64f; font-weight: bold; margin: 15px 0; min-height: 60px;
+    }
+    .hint-text { font-size: 16px; color: #888; margin-bottom: 12px; min-height: 22px; }
+
+    .answer-input {
+      padding: 16px; font-size: 34px; border-radius: 15px; border: 4px solid #89dceb;
+      background-color: #45475a; color: #a6e3a1; width: 170px; text-align: center; font-weight: bold;
+    }
+    .answer-input:focus { outline: none; border-color: #f9e64f; }
+
+    .feedback { font-size: 24px; font-weight: bold; margin: 12px 0; min-height: 30px; }
+
+    .streak-bar { margin: 10px auto; max-width: 300px; }
+    .streak-text { font-size: 14px; color: #cba6f7; margin-bottom: 5px; }
+    .streak-track { background-color: #45475a; border-radius: 10px; height: 10px; overflow: hidden; }
+    .streak-fill {
+      background: linear-gradient(90deg, #a6e3a1, #f9e64f); height: 100%;
+      border-radius: 10px; transition: width 0.5s; width: 0%;
+    }
+
+    /* ===== END SCREEN ===== */
+    .end-title { font-size: 34px; color: #f9e64f; margin: 15px 0 5px 0; }
+    .end-emoji { font-size: 80px; margin: 10px 0; }
+    .grade-box { font-size: 50px; font-weight: bold; margin: 10px 0; }
+
+    .stats-box {
+      background-color: #313244; border-radius: 20px; padding: 20px;
+      margin: 15px auto; max-width: 400px; text-align: left;
+    }
+    .stat-row {
+      display: flex; justify-content: space-between; padding: 8px 0;
+      font-size: 18px; border-bottom: 1px solid #45475a;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: #89dceb; }
+    .stat-value { color: #f9e64f; font-weight: bold; }
+
+    /* ===== LEADERBOARD ===== */
+    .lb-title { font-size: 36px; color: #f9e64f; margin: 15px 0; }
+    .lb-table { max-width: 550px; margin: 0 auto; width: 100%; }
+    .lb-header {
+      display: flex; padding: 10px 12px; background-color: #45475a;
+      border-radius: 10px 10px 0 0; font-weight: bold; font-size: 16px; color: #89dceb;
+    }
+    .lb-row {
+      display: flex; padding: 12px; font-size: 18px;
+      border-bottom: 1px solid #45475a; align-items: center;
+    }
+    .lb-row:nth-child(even) { background-color: #313244; }
+    .lb-rank { width: 12%; text-align: center; font-size: 22px; }
+    .lb-name { width: 25%; text-align: left; }
+    .lb-score-col { width: 18%; text-align: center; color: #f9e64f; font-weight: bold; }
+    .lb-level-col { width: 15%; text-align: center; color: #cba6f7; font-weight: bold; }
+    .lb-topic { width: 15%; text-align: center; font-size: 13px; color: #89dceb; }
+    .lb-diff { width: 15%; text-align: center; font-size: 13px; }
+    .lb-empty { padding: 30px; font-size: 20px; color: #888; }
+
+    .filter-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .filter-btn {
+      padding: 6px 14px; font-size: 14px; border: 2px solid #45475a; border-radius: 10px;
+      cursor: pointer; font-weight: bold; background-color: #313244; color: #fff; transition: all 0.2s;
+    }
+    .filter-btn.active { border-color: #f9e64f; background-color: #45475a; }
+    .filter-btn:hover { border-color: #89dceb; }
+
+    /* ===== HOW TO PLAY ===== */
+    .htp-section {
+      background-color: #313244; border-radius: 15px; padding: 20px;
+      margin: 15px auto; max-width: 550px; text-align: left;
+    }
+    .htp-title { font-size: 22px; color: #f9e64f; margin-bottom: 10px; }
+    .htp-text { font-size: 18px; line-height: 1.8; color: #cdd6f4; }
+    .htp-icon { font-size: 24px; margin-right: 8px; }
+
+    /* ===== LEVEL UP OVERLAY ===== */
+    .level-up-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.8); z-index: 200;
+      justify-content: center; align-items: center; flex-direction: column;
+    }
+    .level-up-overlay.show { display: flex; }
+    .level-up-text {
+      font-size: 60px; color: #f9e64f; font-weight: bold;
+      animation: levelPop 0.6s ease;
+    }
+    .level-up-sub { font-size: 24px; color: #89dceb; margin-top: 10px; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+    @keyframes levelPop { 0%{transform:scale(0.3);opacity:0} 60%{transform:scale(1.2);opacity:1} 100%{transform:scale(1)} }
+    @keyframes float-up { 0%{opacity:1;transform:translateY(0) translateX(-50%)} 100%{opacity:0;transform:translateY(-80px) translateX(-50%)} }
+    .pop { animation: pop 0.4s ease; }
+    .shake { animation: shake 0.4s ease; }
+    .bonus-float {
+      position: fixed; font-size: 26px; font-weight: bold; color: #f9e64f;
+      pointer-events: none; animation: float-up 1s ease forwards;
+    }
+
+    @media (max-width: 500px) {
+      .game-title { font-size: 34px; }
+      .question { font-size: 36px; }
+      .answer-input { font-size: 26px; width: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SOUND TOGGLE -->
+  <div class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="Toggle Sound">&#128264;</div>
+
+  <!-- LEVEL UP OVERLAY -->
+  <div class="level-up-overlay" id="levelUpOverlay">
+    <div class="level-up-text" id="levelUpText">LEVEL UP!</div>
+    <div class="level-up-sub" id="levelUpSub">Level 2</div>
+  </div>
+
+  <!-- ===== START SCREEN ===== -->
+  <div class="screen active" id="startScreen">
+    <div class="game-title">&#129518; Math Game!</div>
+    <div class="game-subtitle">Pick a topic and test your skills!</div>
+
+    <input type="text" class="name-input" id="playerNameInput" placeholder="Type your name..." maxlength="15">
+
+    <div class="section-label">Pick a topic:</div>
+    <div class="topic-grid" id="topicGrid">
+      <button class="topic-btn" onclick="pickTopic('addition',this)"><span class="topic-emoji">&#10133;</span><span class="topic-name">Addition</span></button>
+      <button class="topic-btn" onclick="pickTopic('subtraction',this)"><span class="topic-emoji">&#10134;</span><span class="topic-name">Subtraction</span></button>
+      <button class="topic-btn" onclick="pickTopic('multiplication',this)"><span class="topic-emoji">&#10006;</span><span class="topic-name">Multiplication</span></button>
+      <button class="topic-btn" onclick="pickTopic('division',this)"><span class="topic-emoji">&#10135;</span><span class="topic-name">Division</span></button>
+      <button class="topic-btn" onclick="pickTopic('mixed',this)"><span class="topic-emoji">&#127922;</span><span class="topic-name">Mixed</span></button>
+      <button class="topic-btn" onclick="pickTopic('decimals',this)"><span class="topic-emoji">&#128307;</span><span class="topic-name">Decimals</span></button>
+      <button class="topic-btn" onclick="pickTopic('algebra',this)"><span class="topic-emoji">&#128300;</span><span class="topic-name">Algebra</span></button>
+      <button class="topic-btn" onclick="pickTopic('fractions',this)"><span class="topic-emoji">&#127856;</span><span class="topic-name">Fractions</span></button>
+      <button class="topic-btn" onclick="pickTopic('squares',this)"><span class="topic-emoji">&#178;</span><span class="topic-name">Squares</span></button>
+      <button class="topic-btn" onclick="pickTopic('percentage',this)"><span class="topic-emoji">&#37;</span><span class="topic-name">Percentage</span></button>
+    </div>
+
+    <div class="section-label">Pick difficulty:</div>
+    <div class="diff-row">
+      <button class="diff-btn diff-easy" onclick="pickDifficulty('easy',this)">&#128154; Easy</button>
+      <button class="diff-btn diff-medium" onclick="pickDifficulty('medium',this)">&#128155; Medium</button>
+      <button class="diff-btn diff-hard" onclick="pickDifficulty('hard',this)">&#10084; Hard</button>
+    </div>
+
+    <br>
+    <button class="btn btn-green" style="font-size:26px; padding:18px 50px;" onclick="startGame()">Start Game! &#128640;</button>
+    <br>
+    <button class="btn btn-purple" onclick="showLeaderboard()">&#127942; Leaderboard</button>
+    <button class="btn btn-blue" onclick="showHowToPlay()">&#10067; How to Play</button>
+
+    <p id="startError"></p>
+  </div>
+
+  <!-- ===== HOW TO PLAY SCREEN ===== -->
+  <div class="screen" id="howToPlayScreen">
+    <div class="game-title">&#10067; How to Play</div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#127918;</span>The Goal</div>
+      <div class="htp-text">
+        Answer as many math questions as you can before the timer runs out or you lose all your lives!
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#9201;</span>Timer</div>
+      <div class="htp-text">
+        You have <b style="color:#f9e64f;">60 seconds</b> to answer as many questions as possible. Be quick!
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#10084;</span>Lives</div>
+      <div class="htp-text">
+        You start with <b style="color:#f38ba8;">3 lives</b> (hearts). Each wrong answer loses 1 life. If you lose all 3, the game ends!
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#11088;</span>Points & Scoring</div>
+      <div class="htp-text">
+        &#9989; Correct answer = <b style="color:#a6e3a1;">+10 points</b><br>
+        &#128293; 3 in a row = <b style="color:#f9e64f;">+20 points</b> (Streak bonus!)<br>
+        &#128165; 5 in a row = <b style="color:#f9e64f;">+30 points</b> (Super streak!)<br>
+        &#9193; Skip = 0 points (but no life lost)
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#128200;</span>Levels</div>
+      <div class="htp-text">
+        You start at <b style="color:#cba6f7;">Level 1</b>. Earn XP by answering correctly!<br>
+        Every time the XP bar fills up, you <b style="color:#f9e64f;">LEVEL UP!</b><br>
+        Higher levels = bigger numbers = more challenge!<br><br>
+        <b>XP needed per level:</b><br>
+        Level 1 &#10132; 2: <b>50 XP</b><br>
+        Level 2 &#10132; 3: <b>80 XP</b><br>
+        Level 3 &#10132; 4: <b>120 XP</b><br>
+        Level 4 &#10132; 5: <b>170 XP</b><br>
+        And it keeps going!
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#128218;</span>Topics</div>
+      <div class="htp-text">
+        <b>&#10133; Addition</b> — add numbers together<br>
+        <b>&#10134; Subtraction</b> — subtract numbers<br>
+        <b>&#10006; Multiplication</b> — times tables<br>
+        <b>&#10135; Division</b> — divide numbers<br>
+        <b>&#127922; Mixed</b> — all of the above!<br>
+        <b>&#128307; Decimals</b> — math with decimal numbers (like 3.5)<br>
+        <b>&#128300; Algebra</b> — solve for x (like x + 3 = 10)<br>
+        <b>&#127856; Fractions</b> — add and simplify fractions<br>
+        <b>&#178; Squares</b> — squares and square roots<br>
+        <b>&#37; Percentage</b> — find percentages
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#127942;</span>Leaderboard</div>
+      <div class="htp-text">
+        Your scores are saved automatically! Check the leaderboard to see your best scores and compete with friends!
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <div class="htp-title"><span class="htp-icon">&#128264;</span>Sound</div>
+      <div class="htp-text">
+        Click the speaker icon in the top-right corner to turn sounds on or off.
+      </div>
+    </div>
+
+    <br>
+    <button class="btn btn-blue" onclick="goToStart()">&#11013; Back to Menu</button>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div class="screen" id="gameScreen">
+    <div class="top-bar">
+      <div class="player-name" id="displayName">&#127918; Player</div>
+      <div class="topic-tag" id="topicTag">Mixed</div>
+      <div class="lives-text" id="livesDisplay">&#10084;&#10084;&#10084;</div>
+      <div class="score-text" id="scoreDisplay">Score: 0</div>
+      <div class="timer-text" id="timerDisplay">&#9201; 60s</div>
+    </div>
+
+    <!-- Level bar -->
+    <div class="level-bar">
+      <div class="level-text" id="levelDisplay">&#11088; Lv. 1</div>
+      <div class="xp-track">
+        <div class="xp-fill" id="xpFill"></div>
+      </div>
+      <div class="xp-text" id="xpText">0 / 50 XP</div>
+    </div>
+
+    <div class="game-area">
+      <div class="question-number" id="questionNum">Question 1</div>
+      <div class="question" id="questionDisplay">? + ? = ?</div>
+      <div class="hint-text" id="hintText"></div>
+
+      <input type="text" class="answer-input" id="answerInput" placeholder="?">
+
+      <div>
+        <button class="btn btn-green" onclick="checkAnswer()">Check! &#10004;</button>
+        <button class="btn btn-blue btn-small" onclick="skipQuestion()">Skip &#9193;</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="streak-bar">
+        <div class="streak-text" id="streakText">&#128293; Streak: 0</div>
+        <div class="streak-track">
+          <div class="streak-fill" id="streakFill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== END SCREEN ===== -->
+  <div class="screen" id="endScreen">
+    <div class="end-emoji" id="endEmoji">&#127881;</div>
+    <div class="end-title" id="endTitle">Game Over!</div>
+    <div class="grade-box" id="gradeBox"></div>
+    <div class="stats-box" id="statsBox"></div>
+    <button class="btn btn-green" onclick="goToStart()">Play Again! &#128260;</button>
+    <button class="btn btn-purple" onclick="showLeaderboard()">&#127942; Leaderboard</button>
+  </div>
+
+  <!-- ===== LEADERBOARD SCREEN ===== -->
+  <div class="screen" id="leaderboardScreen">
+    <div class="lb-title">&#127942; Leaderboard</div>
+
+    <div class="filter-row" id="filterRow">
+      <button class="filter-btn active" onclick="filterLB('all',this)">All</button>
+      <button class="filter-btn" onclick="filterLB('addition',this)">&#10133;</button>
+      <button class="filter-btn" onclick="filterLB('subtraction',this)">&#10134;</button>
+      <button class="filter-btn" onclick="filterLB('multiplication',this)">&#10006;</button>
+      <button class="filter-btn" onclick="filterLB('division',this)">&#10135;</button>
+      <button class="filter-btn" onclick="filterLB('mixed',this)">&#127922;</button>
+      <button class="filter-btn" onclick="filterLB('decimals',this)">&#128307;</button>
+      <button class="filter-btn" onclick="filterLB('algebra',this)">&#128300;</button>
+      <button class="filter-btn" onclick="filterLB('fractions',this)">&#127856;</button>
+      <button class="filter-btn" onclick="filterLB('squares',this)">&#178;</button>
+      <button class="filter-btn" onclick="filterLB('percentage',this)">&#37;</button>
+    </div>
+
+    <div class="lb-table">
+      <div class="lb-header">
+        <div class="lb-rank">#</div>
+        <div class="lb-name">Name</div>
+        <div class="lb-score-col">Score</div>
+        <div class="lb-level-col">Level</div>
+        <div class="lb-topic">Topic</div>
+        <div class="lb-diff">Diff</div>
+      </div>
+      <div id="lbBody"></div>
+    </div>
+
+    <br>
+    <button class="btn btn-blue" onclick="goToStart()">&#11013; Back</button>
+  </div>
+
+  <script>
+    // =====================
+    // SOUND SYSTEM
+    // =====================
+    var soundOn = true;
+    var audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type, volume) {
+      if (!soundOn) return;
+      try {
+        var ctx = getAudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = type || "sine";
+        osc.frequency.value = freq;
+        gain.gain.value = volume || 0.3;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundCorrect() {
+      playTone(523, 0.1, "sine", 0.3);
+      setTimeout(function() { playTone(659, 0.1, "sine", 0.3); }, 100);
+      setTimeout(function() { playTone(784, 0.15, "sine", 0.3); }, 200);
+    }
+
+    function soundWrong() {
+      playTone(200, 0.15, "square", 0.2);
+      setTimeout(function() { playTone(150, 0.3, "square", 0.2); }, 150);
+    }
+
+    function soundClick() {
+      playTone(800, 0.05, "sine", 0.15);
+    }
+
+    function soundSkip() {
+      playTone(400, 0.1, "triangle", 0.2);
+      setTimeout(function() { playTone(300, 0.1, "triangle", 0.2); }, 100);
+    }
+
+    function soundLevelUp() {
+      playTone(523, 0.12, "sine", 0.3);
+      setTimeout(function() { playTone(659, 0.12, "sine", 0.3); }, 120);
+      setTimeout(function() { playTone(784, 0.12, "sine", 0.3); }, 240);
+      setTimeout(function() { playTone(1047, 0.3, "sine", 0.35); }, 360);
+    }
+
+    function soundGameOver() {
+      playTone(400, 0.2, "sine", 0.3);
+      setTimeout(function() { playTone(350, 0.2, "sine", 0.3); }, 200);
+      setTimeout(function() { playTone(300, 0.2, "sine", 0.3); }, 400);
+      setTimeout(function() { playTone(200, 0.5, "sine", 0.25); }, 600);
+    }
+
+    function soundStreak() {
+      playTone(600, 0.08, "sine", 0.25);
+      setTimeout(function() { playTone(800, 0.08, "sine", 0.25); }, 80);
+      setTimeout(function() { playTone(1000, 0.15, "sine", 0.3); }, 160);
+    }
+
+    function soundTick() {
+      playTone(1000, 0.03, "sine", 0.1);
+    }
+
+    function soundStart() {
+      playTone(400, 0.1, "sine", 0.25);
+      setTimeout(function() { playTone(500, 0.1, "sine", 0.25); }, 100);
+      setTimeout(function() { playTone(600, 0.1, "sine", 0.25); }, 200);
+      setTimeout(function() { playTone(800, 0.2, "sine", 0.3); }, 300);
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      document.getElementById("soundToggle").textContent = soundOn ? "\u{1F50A}" : "\u{1F507}";
+      if (soundOn) soundClick();
+    }
+
+    // =====================
+    // GAME VARIABLES
+    // =====================
+    var playerName = "";
+    var difficulty = "";
+    var topic = "";
+    var score = 0;
+    var lives = 3;
+    var currentAnswer = 0;
+    var currentAnswerStr = "";
+    var questionCount = 0;
+    var correctCount = 0;
+    var wrongCount = 0;
+    var skippedCount = 0;
+    var streak = 0;
+    var bestStreak = 0;
+    var timeLeft = 60;
+    var timer = null;
+    var lbFilter = "all";
+
+    // LEVEL SYSTEM
+    var level = 1;
+    var xp = 0;
+    var xpForNext = 50;
+
+    // ANTI-SPAM
+    var waiting = false;
+
+    function getXpNeeded(lvl) {
+      // 50, 80, 120, 170, 230, 300...
+      return 50 + (lvl - 1) * 30 + Math.floor((lvl - 1) * (lvl - 1) * 5);
+    }
+
+    // =====================
+    // TOPIC & DIFFICULTY
+    // =====================
+    function pickTopic(t, btn) {
+      topic = t;
+      soundClick();
+      var buttons = document.querySelectorAll(".topic-btn");
+      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove("selected");
+      btn.classList.add("selected");
+    }
+
+    function pickDifficulty(lvl, btn) {
+      difficulty = lvl;
+      soundClick();
+      var buttons = document.querySelectorAll(".diff-btn");
+      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove("selected");
+      btn.classList.add("selected");
+    }
+
+    // =====================
+    // SCREENS
+    // =====================
+    function showScreen(id) {
+      var screens = ["startScreen","gameScreen","endScreen","leaderboardScreen","howToPlayScreen"];
+      for (var i = 0; i < screens.length; i++) document.getElementById(screens[i]).classList.remove("active");
+      document.getElementById(id).classList.add("active");
+    }
+
+    function showHowToPlay() {
+      soundClick();
+      showScreen("howToPlayScreen");
+    }
+
+    // =====================
+    // START GAME
+    // =====================
+    function startGame() {
+      playerName = document.getElementById("playerNameInput").value.trim();
+      if (!playerName) { document.getElementById("startError").textContent = "Type your name first!"; return; }
+      if (!topic) { document.getElementById("startError").textContent = "Pick a topic first!"; return; }
+      if (!difficulty) { document.getElementById("startError").textContent = "Pick a difficulty first!"; return; }
+      document.getElementById("startError").textContent = "";
+
+      score = 0; lives = 3; questionCount = 0; correctCount = 0; wrongCount = 0;
+      skippedCount = 0; streak = 0; bestStreak = 0; timeLeft = 60;
+      level = 1; xp = 0; xpForNext = getXpNeeded(1);
+
+      var topicNames = {
+        addition:"Addition", subtraction:"Subtraction", multiplication:"Multiplication",
+        division:"Division", mixed:"Mixed", decimals:"Decimals",
+        algebra:"Algebra", fractions:"Fractions", squares:"Squares", percentage:"Percentage"
+      };
+
+      document.getElementById("displayName").innerHTML = "&#127918; " + playerName;
+      document.getElementById("topicTag").textContent = topicNames[topic] || topic;
+      document.getElementById("timerDisplay").style.color = "#cba6f7";
+      updateScore(); updateLives(); updateStreak(); updateLevel();
+      showScreen("gameScreen");
+      soundStart();
+      newQuestion();
+      startTimer();
+    }
+
+    // =====================
+    // TIMER
+    // =====================
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(function () {
+        timeLeft--;
+        document.getElementById("timerDisplay").innerHTML = "&#9201; " + timeLeft + "s";
+        if (timeLeft <= 10) {
+          document.getElementById("timerDisplay").style.color = "#f38ba8";
+          soundTick();
+        }
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    // =====================
+    // HELPERS
+    // =====================
+    function randomNumber(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function randomDecimal(min, max, places) { return parseFloat((Math.random() * (max - min) + min).toFixed(places)); }
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a; }
+
+    // =====================
+    // LEVEL SCALING
+    // =====================
+    function getLevelMaxNum() {
+      var base = difficulty === "easy" ? 10 : difficulty === "medium" ? 25 : 50;
+      // Each level adds bigger numbers
+      return base + (level - 1) * 10;
+    }
+
+    function getLevelMulMax() {
+      var base = difficulty === "easy" ? 10 : difficulty === "medium" ? 12 : 15;
+      return Math.min(base + (level - 1) * 3, 30);
+    }
+
+    // =====================
+    // NEW QUESTION
+    // =====================
+    function newQuestion() {
+      waiting = false;
+      questionCount++;
+      document.getElementById("questionNum").textContent = "Question " + questionCount;
+      document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("hintText").textContent = "";
+      document.getElementById("answerInput").focus();
+      document.getElementById("answerInput").type = "text";
+
+      var num1, num2, questionText, hint = "";
+      var maxNum = getLevelMaxNum();
+      var mulMax = getLevelMulMax();
+
+      if (topic === "addition") {
+        num1 = randomNumber(1, maxNum); num2 = randomNumber(1, maxNum);
+        currentAnswer = num1 + num2; currentAnswerStr = String(currentAnswer);
+        questionText = num1 + " + " + num2 + " = ?";
+
+      } else if (topic === "subtraction") {
+        num1 = randomNumber(1, maxNum); num2 = randomNumber(1, num1);
+        currentAnswer = num1 - num2; currentAnswerStr = String(currentAnswer);
+        questionText = num1 + " - " + num2 + " = ?";
+
+      } else if (topic === "multiplication") {
+        num1 = randomNumber(1, mulMax); num2 = randomNumber(1, mulMax);
+        currentAnswer = num1 * num2; currentAnswerStr = String(currentAnswer);
+        questionText = num1 + " \u00d7 " + num2 + " = ?";
+
+      } else if (topic === "division") {
+        num2 = randomNumber(1, mulMax); currentAnswer = randomNumber(1, mulMax);
+        num1 = num2 * currentAnswer; currentAnswerStr = String(currentAnswer);
+        questionText = num1 + " \u00f7 " + num2 + " = ?";
+
+      } else if (topic === "mixed") {
+        var ops = ["+","-","\u00d7","\u00f7"];
+        var op = ops[randomNumber(0,3)];
+        if (op==="+") { num1=randomNumber(1,maxNum); num2=randomNumber(1,maxNum); currentAnswer=num1+num2; }
+        else if (op==="-") { num1=randomNumber(1,maxNum); num2=randomNumber(1,num1); currentAnswer=num1-num2; }
+        else if (op==="\u00d7") { num1=randomNumber(1,mulMax); num2=randomNumber(1,mulMax); currentAnswer=num1*num2; }
+        else { num2=randomNumber(1,12); currentAnswer=randomNumber(1,12); num1=num2*currentAnswer; }
+        currentAnswerStr = String(currentAnswer);
+        questionText = num1 + " " + op + " " + num2 + " = ?";
+
+      } else if (topic === "decimals") {
+        var places = difficulty === "easy" ? 1 : difficulty === "medium" ? 1 : 2;
+        var dMax = difficulty === "easy" ? 10 + level * 5 : difficulty === "medium" ? 20 + level * 8 : 50 + level * 10;
+        var dOps = difficulty === "easy" ? ["+","-"] : ["+","-","\u00d7"];
+        var dOp = dOps[randomNumber(0, dOps.length - 1)];
+        if (dOp === "+") {
+          num1 = randomDecimal(1, dMax, places); num2 = randomDecimal(1, dMax, places);
+          currentAnswer = parseFloat((num1 + num2).toFixed(places));
+          questionText = num1 + " + " + num2 + " = ?";
+        } else if (dOp === "-") {
+          num1 = randomDecimal(2, dMax, places); num2 = randomDecimal(1, num1, places);
+          currentAnswer = parseFloat((num1 - num2).toFixed(places));
+          questionText = num1 + " - " + num2 + " = ?";
+        } else {
+          num1 = randomDecimal(1, 10, 1); num2 = randomNumber(1, 9);
+          currentAnswer = parseFloat((num1 * num2).toFixed(1));
+          questionText = num1 + " \u00d7 " + num2 + " = ?";
+        }
+        currentAnswerStr = String(currentAnswer);
+        hint = "Answer with decimals (e.g. 3.5)";
+
+      } else if (topic === "algebra") {
+        var aMax = maxNum;
+        var aOps = difficulty === "easy" ? ["+","-"] : ["+","-","\u00d7"];
+        var aOp = aOps[randomNumber(0, aOps.length - 1)];
+        currentAnswer = randomNumber(1, aMax);
+        if (aOp === "+") {
+          num2 = randomNumber(1, aMax); var r = currentAnswer + num2;
+          questionText = "x + " + num2 + " = " + r;
+          hint = "Find x!";
+        } else if (aOp === "-") {
+          num2 = randomNumber(1, currentAnswer); var r2 = currentAnswer - num2;
+          questionText = "x - " + num2 + " = " + r2;
+          hint = "Find x!";
+        } else {
+          currentAnswer = randomNumber(1, 12 + level); num2 = randomNumber(2, 12);
+          var r3 = currentAnswer * num2;
+          questionText = "x \u00d7 " + num2 + " = " + r3;
+          hint = "Find x!";
+        }
+        currentAnswerStr = String(currentAnswer);
+
+      } else if (topic === "fractions") {
+        if (difficulty === "easy") {
+          var denoms = [2, 4];
+          var d = denoms[randomNumber(0, denoms.length - 1)];
+          var n = randomNumber(1, d - 1);
+          var whole = randomNumber(1, 5 + level);
+          currentAnswer = parseFloat((whole + n / d).toFixed(2));
+          currentAnswerStr = String(currentAnswer);
+          questionText = whole + " + " + n + "/" + d + " = ?";
+          hint = "Answer as decimal (e.g. 3.5)";
+        } else if (difficulty === "medium") {
+          var factor = randomNumber(2, 5);
+          var sN = randomNumber(1, 6); var sD = randomNumber(sN + 1, 8);
+          while (gcd(sN, sD) > 1) { sN = randomNumber(1, 6); sD = randomNumber(sN + 1, 8); }
+          questionText = "Simplify: " + (sN * factor) + "/" + (sD * factor);
+          currentAnswerStr = sN + "/" + sD; currentAnswer = null;
+          hint = "Write as fraction (e.g. 2/3)";
+        } else {
+          var d1 = randomNumber(2, 6); var n1 = randomNumber(1, d1 - 1); var n2f = randomNumber(1, d1 - 1);
+          var sumN = n1 + n2f;
+          questionText = n1 + "/" + d1 + " + " + n2f + "/" + d1 + " = ?";
+          if (sumN >= d1) {
+            var wh = Math.floor(sumN / d1); var rem = sumN % d1;
+            if (rem === 0) currentAnswerStr = String(wh);
+            else { var g = gcd(rem, d1); currentAnswerStr = wh + " " + (rem/g) + "/" + (d1/g); }
+          } else { var g2 = gcd(sumN, d1); currentAnswerStr = (sumN/g2) + "/" + (d1/g2); }
+          currentAnswer = null;
+          hint = "Simplify! (e.g. 1 1/2 or 3/4)";
+        }
+
+      } else if (topic === "squares") {
+        if (difficulty === "hard" && randomNumber(1,2) === 1) {
+          num1 = randomNumber(1, 12 + level);
+          var sq = num1 * num1;
+          currentAnswer = num1; currentAnswerStr = String(num1);
+          questionText = "\u221a" + sq + " = ?";
+          hint = "What \u00d7 itself = " + sq + "?";
+        } else {
+          num1 = randomNumber(1, difficulty === "easy" ? 10 + level : difficulty === "medium" ? 15 + level : 20 + level);
+          currentAnswer = num1 * num1; currentAnswerStr = String(currentAnswer);
+          questionText = num1 + "\u00b2 = ?";
+          hint = num1 + " \u00d7 " + num1;
+        }
+
+      } else if (topic === "percentage") {
+        if (difficulty === "easy") {
+          var pcts = [10,25,50]; var p = pcts[randomNumber(0, pcts.length - 1)];
+          num1 = randomNumber(2, 10 + level) * 10;
+          currentAnswer = (p / 100) * num1; currentAnswerStr = String(currentAnswer);
+          questionText = p + "% of " + num1 + " = ?";
+        } else if (difficulty === "medium") {
+          var pcts2 = [10,20,25,50,75]; var p2 = pcts2[randomNumber(0, pcts2.length - 1)];
+          num1 = randomNumber(2, 10 + level) * 20;
+          currentAnswer = (p2 / 100) * num1; currentAnswerStr = String(currentAnswer);
+          questionText = p2 + "% of " + num1 + " = ?";
+        } else {
+          var p3 = randomNumber(1, 9) * 10 + randomNumber(0, 1) * 5;
+          num1 = randomNumber(2, 10 + level) * 20;
+          currentAnswer = parseFloat(((p3 / 100) * num1).toFixed(1)); currentAnswerStr = String(currentAnswer);
+          questionText = p3 + "% of " + num1 + " = ?";
+        }
+      }
+
+      document.getElementById("questionDisplay").textContent = questionText;
+      if (hint) document.getElementById("hintText").textContent = hint;
+    }
+
+    // =====================
+    // CHECK ANSWER
+    // =====================
+    function checkAnswer() {
+      if (waiting) return;
+      var guessRaw = document.getElementById("answerInput").value.trim();
+      if (guessRaw === "") {
+        document.getElementById("feedback").textContent = "Type an answer first!";
+        document.getElementById("feedback").style.color = "#f38ba8";
+        return;
+      }
+
+      var isCorrect = false;
+      if (currentAnswer === null) {
+        isCorrect = guessRaw.replace(/\s+/g, " ").trim() === currentAnswerStr.replace(/\s+/g, " ").trim();
+      } else {
+        isCorrect = parseFloat(guessRaw) === currentAnswer;
+      }
+
+      if (isCorrect) {
+        correctCount++; streak++;
+        if (streak > bestStreak) bestStreak = streak;
+
+        var points = 10;
+        if (streak >= 5) { points = 30; showBonus("+30 SUPER!"); soundStreak(); }
+        else if (streak >= 3) { points = 20; showBonus("+20 STREAK!"); soundStreak(); }
+        else { soundCorrect(); }
+
+        score += points;
+
+        // XP system
+        var xpGain = points;
+        xp += xpGain;
+        checkLevelUp();
+
+        updateScore(); updateStreak(); updateLevel();
+
+        document.getElementById("feedback").innerHTML = "&#127881; Correct! +" + points + " pts!";
+        document.getElementById("feedback").style.color = "#a6e3a1";
+        document.getElementById("questionDisplay").classList.add("pop");
+        waiting = true;
+        setTimeout(function () {
+          document.getElementById("questionDisplay").classList.remove("pop");
+          newQuestion();
+        }, 800);
+
+      } else {
+        wrongCount++; streak = 0; lives--;
+        soundWrong();
+        updateLives(); updateStreak();
+
+        var disp = currentAnswer !== null ? currentAnswer : currentAnswerStr;
+        document.getElementById("feedback").innerHTML = "&#128533; Wrong! Answer: " + disp;
+        document.getElementById("feedback").style.color = "#f38ba8";
+        document.getElementById("questionDisplay").classList.add("shake");
+        setTimeout(function () { document.getElementById("questionDisplay").classList.remove("shake"); }, 400);
+
+        waiting = true;
+        if (lives <= 0) { setTimeout(function () { endGame(); }, 1000); }
+        else { setTimeout(function () { newQuestion(); }, 1500); }
+      }
+    }
+
+    // =====================
+    // LEVEL SYSTEM
+    // =====================
+    function checkLevelUp() {
+      while (xp >= xpForNext) {
+        xp -= xpForNext;
+        level++;
+        xpForNext = getXpNeeded(level);
+        showLevelUpOverlay();
+        soundLevelUp();
+      }
+    }
+
+    function showLevelUpOverlay() {
+      var overlay = document.getElementById("levelUpOverlay");
+      document.getElementById("levelUpText").textContent = "LEVEL UP!";
+      var messages = [
+        "",
+        "Bigger numbers incoming!",
+        "Getting tougher!",
+        "You're on fire!",
+        "Math master mode!",
+        "Legendary difficulty!",
+        "Are you a calculator?!",
+        "Unstoppable!",
+        "Beyond genius!",
+        "MAX POWER!"
+      ];
+      var msg = messages[Math.min(level - 1, messages.length - 1)] || "Incredible!";
+      document.getElementById("levelUpSub").textContent = "Level " + level + " \u{1F31F} " + msg;
+      overlay.classList.add("show");
+      setTimeout(function () { overlay.classList.remove("show"); }, 1800);
+    }
+
+    function updateLevel() {
+      document.getElementById("levelDisplay").innerHTML = "&#11088; Lv. " + level;
+      var pct = Math.min((xp / xpForNext) * 100, 100);
+      document.getElementById("xpFill").style.width = pct + "%";
+      document.getElementById("xpText").textContent = xp + " / " + xpForNext + " XP";
+    }
+
+    // =====================
+    // SKIP
+    // =====================
+    function skipQuestion() {
+      if (waiting) return;
+      skippedCount++; streak = 0; updateStreak(); waiting = true;
+      soundSkip();
+      var disp = currentAnswer !== null ? currentAnswer : currentAnswerStr;
+      document.getElementById("feedback").innerHTML = "&#9193; Skipped! Answer: " + disp;
+      document.getElementById("feedback").style.color = "#89dceb";
+      setTimeout(function () { newQuestion(); }, 1000);
+    }
+
+    // =====================
+    // UPDATES
+    // =====================
+    function updateScore() {
+      document.getElementById("scoreDisplay").textContent = "Score: " + score;
+      document.getElementById("scoreDisplay").classList.add("pop");
+      setTimeout(function () { document.getElementById("scoreDisplay").classList.remove("pop"); }, 400);
+    }
+
+    function updateLives() {
+      var h = "";
+      for (var i = 0; i < lives; i++) h += "&#10084;";
+      for (var j = lives; j < 3; j++) h += "&#128420;";
+      document.getElementById("livesDisplay").innerHTML = h;
+    }
+
+    function updateStreak() {
+      document.getElementById("streakText").innerHTML = "&#128293; Streak: " + streak;
+      document.getElementById("streakFill").style.width = Math.min(streak * 20, 100) + "%";
+    }
+
+    function showBonus(text) {
+      var el = document.createElement("div");
+      el.className = "bonus-float"; el.textContent = text;
+      el.style.left = "50%"; el.style.top = "40%";
+      document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 1000);
+    }
+
+    // =====================
+    // END GAME
+    // =====================
+    function endGame() {
+      clearInterval(timer);
+      soundGameOver();
+      showScreen("endScreen");
+
+      var total = correctCount + wrongCount;
+      var pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+      var grade, emoji, title;
+      if (pct >= 90) { grade="A+"; emoji="&#129351;"; title="AMAZING, "+playerName+"!"; }
+      else if (pct >= 80) { grade="A"; emoji="&#11088;"; title="GREAT JOB, "+playerName+"!"; }
+      else if (pct >= 70) { grade="B"; emoji="&#128170;"; title="GOOD WORK, "+playerName+"!"; }
+      else if (pct >= 50) { grade="C"; emoji="&#128515;"; title="NICE TRY, "+playerName+"!"; }
+      else { grade="D"; emoji="&#128170;"; title="KEEP PRACTICING, "+playerName+"!"; }
+
+      document.getElementById("endEmoji").innerHTML = emoji;
+      document.getElementById("endTitle").textContent = title;
+      document.getElementById("gradeBox").innerHTML =
+        '<span style="color:#f9e64f;font-size:65px;">'+grade+'</span><br>' +
+        '<span style="font-size:20px;color:#89dceb;">'+pct+'% correct</span>';
+
+      var tn = {addition:"Addition",subtraction:"Subtraction",multiplication:"Multiplication",
+        division:"Division",mixed:"Mixed",decimals:"Decimals",algebra:"Algebra",
+        fractions:"Fractions",squares:"Squares",percentage:"Percentage"};
+
+      document.getElementById("statsBox").innerHTML =
+        '<div class="stat-row"><span class="stat-label">&#127918; Score</span><span class="stat-value">'+score+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#11088; Level Reached</span><span class="stat-value">'+level+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#9989; Correct</span><span class="stat-value">'+correctCount+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#10060; Wrong</span><span class="stat-value">'+wrongCount+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#9193; Skipped</span><span class="stat-value">'+skippedCount+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#128293; Best Streak</span><span class="stat-value">'+bestStreak+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#128218; Topic</span><span class="stat-value">'+(tn[topic]||topic)+'</span></div>' +
+        '<div class="stat-row"><span class="stat-label">&#127942; Difficulty</span><span class="stat-value">'+difficulty.toUpperCase()+'</span></div>';
+
+      saveToLeaderboard(playerName, score, topic, difficulty, pct, level);
+    }
+
+    // =====================
+    // LEADERBOARD
+    // =====================
+    function getLeaderboard() {
+      var d = localStorage.getItem("mathGameLeaderboard");
+      return d ? JSON.parse(d) : [];
+    }
+
+    function saveToLeaderboard(name, sc, tp, df, pct, lvl) {
+      var lb = getLeaderboard();
+      lb.push({ name:name, score:sc, topic:tp, difficulty:df, percent:pct, level:lvl, date:new Date().toLocaleDateString() });
+      var diffOrder = { hard: 0, medium: 1, easy: 2 };
+      lb.sort(function(a,b){
+        var da = diffOrder[a.difficulty] !== undefined ? diffOrder[a.difficulty] : 3;
+        var db = diffOrder[b.difficulty] !== undefined ? diffOrder[b.difficulty] : 3;
+        if (da !== db) return da - db;
+        return b.score - a.score;
+      });
+      if (lb.length > 50) lb = lb.slice(0, 50);
+      localStorage.setItem("mathGameLeaderboard", JSON.stringify(lb));
+    }
+
+    function showLeaderboard() {
+      soundClick();
+      showScreen("leaderboardScreen");
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      var lb = getLeaderboard();
+      var body = document.getElementById("lbBody");
+      body.innerHTML = "";
+
+      var filtered = lbFilter === "all" ? lb : lb.filter(function(e){ return e.topic === lbFilter; });
+
+      if (filtered.length === 0) {
+        body.innerHTML = '<div class="lb-empty">No scores yet! Play a game! &#127918;</div>';
+        return;
+      }
+
+      var medals = ["&#129351;","&#129352;","&#129353;"];
+      var tn = {addition:"Add",subtraction:"Sub",multiplication:"Mul",division:"Div",mixed:"Mix",
+        decimals:"Dec",algebra:"Alg",fractions:"Frac",squares:"Sq",percentage:"Pct"};
+
+      // Group by difficulty
+      var groups = ["hard", "medium", "easy"];
+      var groupLabels = { hard: "&#10084; HARD", medium: "&#128155; MEDIUM", easy: "&#128154; EASY" };
+      var groupColors = { hard: "#f38ba8", medium: "#f9e64f", easy: "#a6e3a1" };
+
+      for (var g = 0; g < groups.length; g++) {
+        var diff = groups[g];
+        var entries = filtered.filter(function(e) { return e.difficulty === diff; });
+        // Sort by score within group
+        entries.sort(function(a, b) { return b.score - a.score; });
+
+        if (entries.length === 0) continue;
+
+        // Group header
+        var header = document.createElement("div");
+        header.style.cssText = "padding:10px 15px;font-size:18px;font-weight:bold;color:" + groupColors[diff] + ";background-color:#1e1e2e;border-bottom:2px solid " + groupColors[diff] + ";";
+        header.innerHTML = groupLabels[diff];
+        body.appendChild(header);
+
+        // Entries (max 10 per group)
+        for (var i = 0; i < Math.min(entries.length, 10); i++) {
+          var e = entries[i];
+          var rank = i < 3 ? medals[i] : (i + 1);
+
+          var row = document.createElement("div");
+          row.className = "lb-row";
+          row.innerHTML =
+            '<div class="lb-rank">'+rank+'</div>' +
+            '<div class="lb-name">'+e.name+'</div>' +
+            '<div class="lb-score-col">'+e.score+'</div>' +
+            '<div class="lb-level-col">Lv.'+(e.level || 1)+'</div>' +
+            '<div class="lb-topic">'+(tn[e.topic]||e.topic)+'</div>' +
+            '<div class="lb-diff" style="color:'+groupColors[diff]+';">'+e.difficulty.toUpperCase()+'</div>';
+          body.appendChild(row);
+        }
+      }
+    }
+
+    function filterLB(f, btn) {
+      lbFilter = f; soundClick();
+      var btns = document.querySelectorAll(".filter-btn");
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
+      btn.classList.add("active");
+      renderLeaderboard();
+    }
+
+
+    // =====================
+    // NAVIGATION
+    // =====================
+    function goToStart() {
+      clearInterval(timer); soundClick();
+      document.getElementById("startError").textContent = "";
+      document.getElementById("timerDisplay").style.color = "#cba6f7";
+      showScreen("startScreen");
+    }
+
+    // Enter keys
+    document.getElementById("answerInput").addEventListener("keydown", function(e) { if (e.key === "Enter") checkAnswer(); });
+    document.getElementById("playerNameInput").addEventListener("keydown", function(e) { if (e.key === "Enter") startGame(); });
+
+    // Make sure start screen shows when page loads
+    window.onload = function() {
+      showScreen("startScreen");
+    };
+  </script>
+
+</body>
+</html>

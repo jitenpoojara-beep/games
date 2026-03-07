@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 1 - Hello World!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 {
+      color: #f9e64f;
+      font-size: 32px;
+    }
+
+    h2 {
+      color: #89dceb;
+      font-size: 22px;
+      margin-top: 30px;
+    }
+
+    .lesson-box {
+      background-color: #313244;
+      border-left: 5px solid #f9e64f;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .output-box {
+      background-color: #000000;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      min-height: 50px;
+    }
+
+    .output-line {
+      color: #a6e3a1;
+      margin: 5px 0;
+    }
+
+    .try-it {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 5px;
+    }
+
+    .try-it:hover {
+      background-color: #f9e64f;
+    }
+
+    .code-box {
+      background-color: #45475a;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      color: #a6e3a1;
+      margin: 10px 0;
+    }
+
+    .highlight {
+      color: #f9e64f;
+      font-weight: bold;
+    }
+
+    .emoji {
+      font-size: 24px;
+    }
+
+    #playground {
+      background-color: #45475a;
+      color: #a6e3a1;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      width: 100%;
+      height: 100px;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 15px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    .next-btn {
+      background-color: #cba6f7;
+      color: #1e1e2e;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .next-btn:hover {
+      background-color: #f5c2e7;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 1: Hello, World! <span class="emoji">&#127881;</span></h1>
+
+  <div class="lesson-box">
+    <strong>What you'll learn:</strong> How to make the computer show messages on the screen using <span class="highlight">console.log()</span>
+  </div>
+
+  <!-- STEP 1 -->
+  <h2>Step 1: Say Hello!</h2>
+  <p>Click the button below to run your first line of code:</p>
+
+  <div class="code-box">console.log("Hello, World!");</div>
+
+  <button class="try-it" onclick="runStep1()">Run Code! <span class="emoji">&#9654;</span></button>
+
+  <div class="output-box" id="output1"></div>
+
+  <!-- STEP 2 -->
+  <h2>Step 2: Say More Things!</h2>
+  <p>Now let's print multiple lines. Click below:</p>
+
+  <div class="code-box">
+    console.log("My name is Jiten!");<br>
+    console.log("I am 10 years old!");<br>
+    console.log("I am learning JavaScript!");
+  </div>
+
+  <button class="try-it" onclick="runStep2()">Run Code! <span class="emoji">&#9654;</span></button>
+
+  <div class="output-box" id="output2"></div>
+
+  <!-- STEP 3: PLAYGROUND -->
+  <h2>Step 3: Your Turn! <span class="emoji">&#127912;</span></h2>
+  <p>Type your own message below and click Run! Change the text inside the quotes to say anything you want.</p>
+
+  <textarea id="playground">console.log("I love coding!");</textarea>
+  <br>
+  <button class="try-it" onclick="runPlayground()">Run My Code! <span class="emoji">&#128640;</span></button>
+  <button class="try-it" onclick="clearPlayground()" style="background-color: #f38ba8;">Clear <span class="emoji">&#128465;</span></button>
+
+  <div class="output-box" id="output3"></div>
+
+  <!-- WHAT YOU LEARNED -->
+  <h2>What You Learned Today <span class="emoji">&#127891;</span></h2>
+  <div class="lesson-box">
+    <p><span class="highlight">console.log()</span> tells the computer to show a message.</p>
+    <p>Text must go inside <span class="highlight">" "</span> (quotation marks).</p>
+    <p>Every line of code ends with a <span class="highlight">;</span> (semicolon) - it's like a period at the end of a sentence!</p>
+  </div>
+
+  <p style="font-size: 20px; margin-top: 20px;">Ready for the next lesson? Tell me and we'll learn about <strong style="color: #f9e64f;">Variables</strong> - how to store information like your name and score!</p>
+
+  <script>
+    // This function shows output on the page (like console.log but visible!)
+    function showOutput(elementId, text) {
+      var box = document.getElementById(elementId);
+      var line = document.createElement("div");
+      line.className = "output-line";
+      line.textContent = "> " + text;
+      box.appendChild(line);
+    }
+
+    function clearOutput(elementId) {
+      document.getElementById(elementId).innerHTML = "";
+    }
+
+    // STEP 1: Hello World
+    function runStep1() {
+      clearOutput("output1");
+      showOutput("output1", "Hello, World!");
+    }
+
+    // STEP 2: Multiple lines
+    function runStep2() {
+      clearOutput("output2");
+      showOutput("output2", "My name is Jiten!");
+      showOutput("output2", "I am 10 years old!");
+      showOutput("output2", "I am learning JavaScript!");
+    }
+
+    // STEP 3: Playground
+    function runPlayground() {
+      clearOutput("output3");
+      var code = document.getElementById("playground").value;
+
+      // Replace console.log so it shows on the page
+      var originalLog = console.log;
+      console.log = function (msg) {
+        showOutput("output3", msg);
+        originalLog(msg);
+      };
+
+      try {
+        eval(code);
+      } catch (err) {
+        showOutput("output3", "Oops! Error: " + err.message);
+      }
+
+      console.log = originalLog;
+    }
+
+    function clearPlayground() {
+      document.getElementById("playground").value = 'console.log("I love coding!");';
+      clearOutput("output3");
+    }
+  </script>
+
+</body>
+</html>

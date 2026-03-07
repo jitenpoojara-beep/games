@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 2 - What is a Variable?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #f9e64f; font-size: 32px; }
+    h2 { color: #89dceb; font-size: 24px; margin-top: 40px; }
+
+    .box-demo {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .backpack {
+      background-color: #45475a;
+      border: 4px solid #f9e64f;
+      border-radius: 15px;
+      padding: 25px 35px;
+      text-align: center;
+      font-size: 20px;
+      min-width: 150px;
+      transition: all 0.3s;
+    }
+
+    .backpack-label {
+      color: #f9e64f;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .backpack-content {
+      color: #a6e3a1;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .empty {
+      color: #666;
+      font-style: italic;
+    }
+
+    .arrow {
+      font-size: 40px;
+      color: #f9e64f;
+    }
+
+    .big-btn {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 20px 40px;
+      font-size: 22px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 15px 10px 15px 0;
+      display: inline-block;
+    }
+
+    .big-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .explain {
+      background-color: #313244;
+      border-left: 5px solid #cba6f7;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+
+    .code-line {
+      background-color: #45475a;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 22px;
+      color: #a6e3a1;
+      margin: 10px 0;
+      display: inline-block;
+    }
+
+    .output-box {
+      background-color: #000000;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+      font-size: 22px;
+      min-height: 40px;
+    }
+
+    .output-line {
+      color: #a6e3a1;
+      margin: 8px 0;
+      font-size: 22px;
+    }
+
+    .step-number {
+      background-color: #f9e64f;
+      color: #1e1e2e;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      margin-right: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    p { font-size: 20px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 2: What is a Variable? &#128230;</h1>
+
+  <!-- ==================== -->
+  <!-- REAL LIFE EXAMPLE    -->
+  <!-- ==================== -->
+  <h2><span class="step-number">1</span> Real Life Example</h2>
+
+  <p>You know how you label your school folders?</p>
+  <p>One says <b>"Math"</b>, another says <b>"Science"</b>, another says <b>"English"</b>.</p>
+  <p>Each folder <b>holds different stuff</b> inside it.</p>
+
+  <p><b>A variable is the same thing!</b> It's a <b>name</b> that holds <b>something</b> inside.</p>
+
+  <div class="box-demo">
+    <div class="backpack">
+      <div class="backpack-label">&#128193; myName</div>
+      <div class="backpack-content">"Jiten"</div>
+    </div>
+    <div class="backpack">
+      <div class="backpack-label">&#128193; myAge</div>
+      <div class="backpack-content">10</div>
+    </div>
+    <div class="backpack">
+      <div class="backpack-label">&#128193; myPet</div>
+      <div class="backpack-content">"Dog"</div>
+    </div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- HOW TO MAKE ONE      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">2</span> How to Make One</h2>
+
+  <p>To make a variable, you write just <b>one line</b>:</p>
+
+  <div class="code-line">let myName = "Jiten";</div>
+
+  <div class="explain">
+    <p>Let's break it down word by word:</p>
+    <table style="font-size: 20px; border-collapse: collapse; width: 100%;">
+      <tr>
+        <td style="padding: 10px; color: #f9e64f; font-weight: bold; font-family: Courier New; width: 120px;">let</td>
+        <td style="padding: 10px;">&#128172; "Hey computer, make me a new folder!"</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; color: #f9e64f; font-weight: bold; font-family: Courier New;">myName</td>
+        <td style="padding: 10px;">&#128172; "Write this label on the folder"</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; color: #f9e64f; font-weight: bold; font-family: Courier New;">=</td>
+        <td style="padding: 10px;">&#128172; "Put this thing inside it"</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; color: #f9e64f; font-weight: bold; font-family: Courier New;">"Jiten"</td>
+        <td style="padding: 10px;">&#128172; "This is what goes inside!"</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ==================== -->
+  <!-- TRY IT - ONE AT A TIME -->
+  <!-- ==================== -->
+  <h2><span class="step-number">3</span> Try it! (One at a time)</h2>
+
+  <p>Click each button to create a variable and see what's inside it:</p>
+
+  <!-- Variable 1: Name -->
+  <div style="margin: 20px 0;">
+    <div class="code-line">let myName = "Jiten";</div><br>
+    <button class="big-btn" onclick="tryVar1()">&#128065; What's inside myName?</button>
+    <div class="output-box" id="out1"></div>
+  </div>
+
+  <!-- Variable 2: Age -->
+  <div style="margin: 20px 0;">
+    <div class="code-line">let myAge = 10;</div><br>
+    <button class="big-btn" onclick="tryVar2()">&#128065; What's inside myAge?</button>
+    <div class="output-box" id="out2"></div>
+  </div>
+
+  <!-- Variable 3: Favorite food -->
+  <div style="margin: 20px 0;">
+    <div class="code-line">let myFood = "Pizza";</div><br>
+    <button class="big-btn" onclick="tryVar3()">&#128065; What's inside myFood?</button>
+    <div class="output-box" id="out3"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- INTERACTIVE: MAKE YOUR OWN -->
+  <!-- ==================== -->
+  <h2><span class="step-number">4</span> Make Your Own! &#127912;</h2>
+
+  <p>Type something in the box and click the button to store it in a variable!</p>
+
+  <div style="margin: 20px 0;">
+    <label style="font-size: 20px; display: block; margin-bottom: 10px;">What's your favorite game?</label>
+    <input type="text" id="userGame" placeholder="Type your favorite game here..."
+      style="padding: 15px; font-size: 20px; border-radius: 10px; border: 2px solid #89dceb;
+      background-color: #45475a; color: #a6e3a1; width: 300px;">
+    <br>
+    <button class="big-btn" onclick="storeGame()">Store it in a variable! &#128230;</button>
+  </div>
+
+  <div class="box-demo" id="userVarDisplay" style="display: none;">
+    <div class="backpack" id="userBackpack">
+      <div class="backpack-label">&#128193; favoriteGame</div>
+      <div class="backpack-content" id="userBackpackContent">...</div>
+    </div>
+  </div>
+
+  <div class="output-box" id="out4"></div>
+
+  <!-- ==================== -->
+  <!-- QUIZ TIME -->
+  <!-- ==================== -->
+  <h2><span class="step-number">5</span> Quick Quiz! &#129504;</h2>
+
+  <p>If we write this code:</p>
+  <div class="code-line">let color = "Red";</div>
+  <p>What is stored inside the variable <b>color</b>?</p>
+
+  <button class="big-btn" onclick="checkQuiz('wrong1')" style="background-color: #89dceb;">A) color</button>
+  <button class="big-btn" onclick="checkQuiz('correct')" style="background-color: #89dceb;">B) Red</button>
+  <button class="big-btn" onclick="checkQuiz('wrong2')" style="background-color: #89dceb;">C) let</button>
+
+  <div id="quizResult" style="margin-top: 15px; font-size: 22px;"></div>
+
+  <!-- ==================== -->
+  <!-- SUMMARY -->
+  <!-- ==================== -->
+  <h2>What You Learned &#127891;</h2>
+  <div class="explain">
+    <p><b>A variable = a labeled folder that holds something inside.</b></p>
+    <p>You make one by writing: <span style="color: #a6e3a1; font-family: Courier New;">let name = value;</span></p>
+    <p>That's it! That's the whole idea! &#127881;</p>
+  </div>
+
+  <p style="font-size: 20px; margin-top: 20px;">
+    When this makes sense, tell me and we'll go to the <b>next part</b> —
+    doing <b style="color: #f9e64f;">math with variables</b> and then <b style="color: #f9e64f;">making decisions with if/else</b>! &#127918;
+  </p>
+
+  <script>
+    function showOutput(id, text) {
+      var box = document.getElementById(id);
+      box.innerHTML = "";
+      var line = document.createElement("div");
+      line.className = "output-line";
+      line.textContent = "> " + text;
+      box.appendChild(line);
+    }
+
+    function tryVar1() {
+      showOutput("out1", 'Jiten');
+    }
+
+    function tryVar2() {
+      showOutput("out2", '10');
+    }
+
+    function tryVar3() {
+      showOutput("out3", 'Pizza');
+    }
+
+    function storeGame() {
+      var game = document.getElementById("userGame").value;
+      if (game === "") {
+        showOutput("out4", "Oops! Type something first!");
+        return;
+      }
+      document.getElementById("userVarDisplay").style.display = "flex";
+      document.getElementById("userBackpackContent").textContent = '"' + game + '"';
+      showOutput("out4", "let favoriteGame = \"" + game + "\";  -->  Your variable holds: " + game);
+    }
+
+    function checkQuiz(answer) {
+      var result = document.getElementById("quizResult");
+      if (answer === "correct") {
+        result.innerHTML = '<div class="success">&#127881; CORRECT! "Red" is what\'s stored inside the variable called color!</div>';
+      } else if (answer === "wrong1") {
+        result.innerHTML = '<div style="color: #f38ba8; font-size: 22px;">Not quite! "color" is the NAME of the variable (the label on the folder), not what\'s inside. Try again!</div>';
+      } else {
+        result.innerHTML = '<div style="color: #f38ba8; font-size: 22px;">Not quite! "let" is just the word that tells the computer to make a variable. Try again!</div>';
+      }
+    }
+  </script>
+
+</body>
+</html>

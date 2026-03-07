@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 3 - If / Else!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #f9e64f; font-size: 32px; }
+    h2 { color: #89dceb; font-size: 24px; margin-top: 40px; }
+    p { font-size: 20px; line-height: 1.6; }
+
+    .step-number {
+      background-color: #f9e64f;
+      color: #1e1e2e;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      margin-right: 10px;
+    }
+
+    .explain {
+      background-color: #313244;
+      border-left: 5px solid #cba6f7;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+
+    .code-box {
+      background-color: #45475a;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 20px;
+      color: #a6e3a1;
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+
+    .highlight { color: #f9e64f; font-weight: bold; }
+
+    .big-btn {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 18px 35px;
+      font-size: 22px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 10px 10px 0;
+    }
+
+    .big-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .choice-btn {
+      background-color: #89dceb;
+      color: #1e1e2e;
+      border: none;
+      padding: 18px 35px;
+      font-size: 22px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 10px 10px 0;
+    }
+
+    .choice-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .output-box {
+      background-color: #000000;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+      font-size: 22px;
+      min-height: 40px;
+    }
+
+    .output-line {
+      color: #a6e3a1;
+      margin: 8px 0;
+    }
+
+    .success {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .wrong {
+      background-color: #f38ba8;
+      color: #1e1e2e;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .real-life {
+      background-color: #313244;
+      border-left: 5px solid #f9e64f;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 22px;
+      line-height: 2;
+    }
+
+    .game-box {
+      background-color: #313244;
+      border: 3px solid #f9e64f;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .game-question {
+      font-size: 40px;
+      font-weight: bold;
+      color: #f9e64f;
+      margin: 15px 0;
+    }
+
+    .game-input {
+      padding: 15px;
+      font-size: 28px;
+      border-radius: 10px;
+      border: 3px solid #89dceb;
+      background-color: #45475a;
+      color: #a6e3a1;
+      width: 120px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .score-display {
+      font-size: 24px;
+      color: #f9e64f;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 3: If / Else! &#129504;</h1>
+
+  <!-- ==================== -->
+  <!-- REAL LIFE EXAMPLE    -->
+  <!-- ==================== -->
+  <h2><span class="step-number">1</span> Real Life Example</h2>
+
+  <p>You already use if/else every day! You just don't know it:</p>
+
+  <div class="real-life">
+    <p><b>If</b> it's raining &#127783; <b>→</b> take an umbrella</p>
+    <p><b>Else</b> (not raining) &#9728; <b>→</b> wear sunglasses</p>
+  </div>
+
+  <div class="real-life">
+    <p><b>If</b> you're hungry &#129316; <b>→</b> eat food</p>
+    <p><b>Else</b> (not hungry) &#128522; <b>→</b> keep playing</p>
+  </div>
+
+  <p>In code, it works the <b>exact same way!</b></p>
+
+  <!-- ==================== -->
+  <!-- HOW TO WRITE IT      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">2</span> How to Write It</h2>
+
+  <div class="code-box">
+    <span style="color: #f9e64f;">if</span> (something is true) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;// do this<br>
+    } <span style="color: #f9e64f;">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;// do that instead<br>
+    }
+  </div>
+
+  <div class="explain">
+    <p><span class="highlight">if</span> &#128172; "Hey computer, CHECK something"</p>
+    <p><span class="highlight">( )</span> &#128172; "Here's what to check"</p>
+    <p><span class="highlight">{ }</span> &#128172; "Do the stuff inside these curly brackets"</p>
+    <p><span class="highlight">else</span> &#128172; "If the check FAILED, do this instead"</p>
+  </div>
+
+  <!-- ==================== -->
+  <!-- TRY IT: AGE CHECK    -->
+  <!-- ==================== -->
+  <h2><span class="step-number">3</span> Try It: Age Check</h2>
+
+  <p>Let's check if someone is old enough to drive:</p>
+
+  <div class="code-box">
+    let age = ???;<br><br>
+    <span style="color: #f9e64f;">if</span> (age >= 18) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("You can drive! &#128663;");<br>
+    } <span style="color: #f9e64f;">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("Too young to drive! &#128118;");<br>
+    }
+  </div>
+
+  <div class="explain">
+    <p><span class="highlight">>=</span> means "greater than or equal to"</p>
+    <p>So <span class="highlight">age >= 18</span> means "is age 18 or more?"</p>
+  </div>
+
+  <p>Click a button to set the age and see what happens:</p>
+
+  <button class="choice-btn" onclick="ageCheck(10)">Age = 10</button>
+  <button class="choice-btn" onclick="ageCheck(18)">Age = 18</button>
+  <button class="choice-btn" onclick="ageCheck(25)">Age = 25</button>
+
+  <div class="output-box" id="out1"></div>
+
+  <!-- ==================== -->
+  <!-- TRY IT: PASSWORD      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">4</span> Try It: Secret Password</h2>
+
+  <p>Let's make a password checker! The secret password is <b>"pizza"</b>.</p>
+
+  <div class="code-box">
+    let guess = ???;<br><br>
+    <span style="color: #f9e64f;">if</span> (guess === "pizza") {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("Correct! You may enter! &#128275;");<br>
+    } <span style="color: #f9e64f;">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("Wrong password! &#128274;");<br>
+    }
+  </div>
+
+  <div class="explain">
+    <p><span class="highlight">===</span> means "is this EXACTLY equal to?"</p>
+    <p>We use <b>three</b> equals signs <span class="highlight">===</span> to CHECK.</p>
+    <p>We use <b>one</b> equals sign <span class="highlight">=</span> to STORE (like in variables).</p>
+  </div>
+
+  <p>Type a guess and see if you can crack the password:</p>
+
+  <input type="text" id="passwordGuess" placeholder="Type your guess..."
+    style="padding: 15px; font-size: 20px; border-radius: 10px; border: 2px solid #89dceb;
+    background-color: #45475a; color: #a6e3a1; width: 250px;">
+  <button class="big-btn" onclick="passwordCheck()">Check! &#128273;</button>
+
+  <div class="output-box" id="out2"></div>
+
+  <!-- ==================== -->
+  <!-- MINI MATH GAME!      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">5</span> Mini Math Game! &#127918;</h2>
+
+  <p>Now let's put it all together! This uses <b>variables</b> + <b>if/else</b> to make a mini game:</p>
+
+  <div class="code-box">
+    let answer = num1 + num2;<br>
+    let guess = what you type;<br><br>
+    <span style="color: #f9e64f;">if</span> (guess === answer) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;score = score + 1;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("Correct!");<br>
+    } <span style="color: #f9e64f;">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;console.log("Wrong! Answer was " + answer);<br>
+    }
+  </div>
+
+  <p>Try solving the math problems below!</p>
+
+  <div class="game-box">
+    <div class="score-display">Score: <span id="scoreDisplay">0</span> / <span id="totalDisplay">0</span></div>
+    <div class="game-question" id="mathQuestion">Click "New Question" to start!</div>
+    <div style="margin: 20px 0;">
+      <input type="number" id="mathAnswer" class="game-input" placeholder="?">
+      <button class="big-btn" onclick="checkMathAnswer()" style="font-size: 24px;">Check &#10004;</button>
+    </div>
+    <button class="choice-btn" onclick="newQuestion()">New Question &#128260;</button>
+    <div class="output-box" id="out3" style="text-align: center;"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- WHAT YOU LEARNED     -->
+  <!-- ==================== -->
+  <h2>What You Learned &#127891;</h2>
+  <div class="explain">
+    <p><span class="highlight">if</span> checks if something is true</p>
+    <p><span class="highlight">else</span> runs when the check is false</p>
+    <p><span class="highlight">===</span> checks if two things are equal</p>
+    <p><span class="highlight">>=</span> checks if something is greater or equal</p>
+    <p>You used <b>variables + if/else</b> to build a mini math game!</p>
+  </div>
+
+  <p style="font-size: 20px; margin-top: 20px;">
+    When you're ready, tell me and we'll learn about <b style="color: #f9e64f;">Functions</b> —
+    reusable blocks of code. Then after that, we build the <b style="color: #a6e3a1;">FULL math game</b>! &#127881;
+  </p>
+
+  <script>
+    // --- Helper ---
+    function showOutput(id, text, type) {
+      var box = document.getElementById(id);
+      box.innerHTML = "";
+      var line = document.createElement("div");
+      if (type === "success") {
+        line.className = "success";
+      } else if (type === "wrong") {
+        line.className = "wrong";
+      } else {
+        line.className = "output-line";
+      }
+      line.textContent = text;
+      box.appendChild(line);
+    }
+
+    // --- Step 3: Age Check ---
+    function ageCheck(age) {
+      if (age >= 18) {
+        showOutput("out1", "Age is " + age + " --> You can drive! &#128663;", "success");
+      } else {
+        showOutput("out1", "Age is " + age + " --> Too young to drive! &#128118;", "wrong");
+      }
+    }
+
+    // --- Step 4: Password ---
+    function passwordCheck() {
+      var guess = document.getElementById("passwordGuess").value.toLowerCase().trim();
+      if (guess === "pizza") {
+        showOutput("out2", "Correct! You may enter! &#128275;", "success");
+      } else {
+        showOutput("out2", "Wrong password! &#128274; Try again!", "wrong");
+      }
+    }
+
+    // Enter key for password
+    document.getElementById("passwordGuess").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") passwordCheck();
+    });
+
+    // --- Step 5: Mini Math Game ---
+    var score = 0;
+    var total = 0;
+    var currentAnswer = 0;
+
+    function newQuestion() {
+      var num1 = Math.floor(Math.random() * 10) + 1;
+      var num2 = Math.floor(Math.random() * 10) + 1;
+
+      // Randomly pick +, -, or *
+      var ops = ["+", "-", "*"];
+      var op = ops[Math.floor(Math.random() * ops.length)];
+
+      if (op === "+") {
+        currentAnswer = num1 + num2;
+      } else if (op === "-") {
+        // Make sure answer is not negative (easier for kids)
+        if (num1 < num2) {
+          var temp = num1;
+          num1 = num2;
+          num2 = temp;
+        }
+        currentAnswer = num1 - num2;
+      } else {
+        currentAnswer = num1 * num2;
+      }
+
+      document.getElementById("mathQuestion").textContent = num1 + " " + op + " " + num2 + " = ?";
+      document.getElementById("mathAnswer").value = "";
+      document.getElementById("out3").innerHTML = "";
+      document.getElementById("mathAnswer").focus();
+    }
+
+    function checkMathAnswer() {
+      var guess = Number(document.getElementById("mathAnswer").value);
+
+      if (document.getElementById("mathQuestion").textContent === 'Click "New Question" to start!') {
+        showOutput("out3", "Click 'New Question' first!", "wrong");
+        return;
+      }
+
+      if (document.getElementById("mathAnswer").value === "") {
+        showOutput("out3", "Type a number first!", "wrong");
+        return;
+      }
+
+      total++;
+
+      if (guess === currentAnswer) {
+        score++;
+        showOutput("out3", "Correct! Great job! &#127881;", "success");
+      } else {
+        showOutput("out3", "Wrong! The answer was " + currentAnswer + ". Try the next one!", "wrong");
+      }
+
+      document.getElementById("scoreDisplay").textContent = score;
+      document.getElementById("totalDisplay").textContent = total;
+
+      // Auto load next question after 1.5 seconds
+      setTimeout(function() {
+        newQuestion();
+      }, 1500);
+    }
+
+    // Enter key for math
+    document.getElementById("mathAnswer").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") checkMathAnswer();
+    });
+  </script>
+
+</body>
+</html>

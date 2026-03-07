@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 4 - Functions!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #f9e64f; font-size: 32px; }
+    h2 { color: #89dceb; font-size: 24px; margin-top: 40px; }
+    p { font-size: 22px; line-height: 1.8; }
+
+    .step-number {
+      background-color: #f9e64f;
+      color: #1e1e2e;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 22px;
+      margin-right: 10px;
+    }
+
+    .story-box {
+      background-color: #313244;
+      border-left: 6px solid #f9e64f;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 24px;
+      line-height: 2;
+    }
+
+    .explain {
+      background-color: #313244;
+      border-left: 6px solid #cba6f7;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 22px;
+      line-height: 1.8;
+    }
+
+    .highlight { color: #f9e64f; font-weight: bold; }
+    .green { color: #a6e3a1; font-weight: bold; }
+    .pink { color: #f38ba8; font-weight: bold; }
+
+    .big-btn {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 10px 10px 0;
+    }
+
+    .big-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .scene {
+      background-color: #313244;
+      border: 3px solid #89dceb;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .result-box {
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      font-size: 26px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .result-yes {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+    }
+
+    .result-no {
+      background-color: #f38ba8;
+      color: #1e1e2e;
+    }
+
+    .robot {
+      font-size: 80px;
+      display: block;
+      margin: 10px 0;
+    }
+
+    .machine-box {
+      background-color: #45475a;
+      border: 4px solid #f9e64f;
+      border-radius: 20px;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 350px;
+      text-align: center;
+    }
+
+    .machine-label {
+      color: #f9e64f;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .machine-name {
+      color: #89dceb;
+      font-size: 26px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .machine-arrow {
+      font-size: 30px;
+      color: #f9e64f;
+      margin: 5px 0;
+    }
+
+    .machine-input {
+      color: #cba6f7;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .machine-output {
+      color: #a6e3a1;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 4: Functions! &#129302;</h1>
+
+  <!-- ==================== -->
+  <!-- STEP 1: THE IDEA     -->
+  <!-- ==================== -->
+  <h2><span class="step-number">1</span> The Idea</h2>
+
+  <p>A <b>function</b> is like a <b>robot helper</b> that does a job for you.</p>
+
+  <div class="story-box">
+    <p>Imagine you have a robot. You teach it ONE job:</p>
+    <p>&#129302; <b>"When I say GREET, say Hello!"</b></p>
+    <p>Now every time you say <b>"GREET"</b>, the robot says <b>"Hello!"</b></p>
+    <p>You taught it once, and it can do it again and again!</p>
+  </div>
+
+  <p>That's a function! <b>You teach the computer a job, then you can use it whenever you want.</b></p>
+
+  <!-- ==================== -->
+  <!-- STEP 2: ROBOT GREET  -->
+  <!-- ==================== -->
+  <h2><span class="step-number">2</span> Try It: Greeting Robot</h2>
+
+  <p>We taught the robot to say hello. Click the button to call the robot!</p>
+
+  <div class="scene">
+    <div class="robot">&#129302;</div>
+    <p><b>Robot's job:</b> Say "Hello, friend!"</p>
+
+    <button class="big-btn" onclick="greetRobot()" style="font-size: 28px;">
+      Call the robot! &#128227;
+    </button>
+
+    <div id="greetResult"></div>
+
+    <div class="explain" style="text-align: left; margin-top: 20px;">
+      <p>In code, it looks like this:</p>
+      <p style="font-family: Courier New; color: #a6e3a1; background: #1e1e2e; padding: 15px; border-radius: 8px;">
+        <span style="color: #f9e64f;">function</span> greet() {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;show "Hello, friend!"<br>
+        }<br><br>
+        greet(); &nbsp; <span style="color: #888;">// Call the robot!</span>
+      </p>
+      <p><span class="highlight">function</span> = "I'm teaching the robot a job"</p>
+      <p><span class="highlight">greet</span> = the robot's name</p>
+      <p><span class="highlight">greet()</span> = "Hey greet robot, do your job!"</p>
+    </div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 3: GIVING INPUT -->
+  <!-- ==================== -->
+  <h2><span class="step-number">3</span> Giving the Robot Information</h2>
+
+  <p>You can also <b>give</b> the robot some information to use!</p>
+
+  <div class="story-box">
+    <p>&#129302; <b>"When I say GREET and give you a name, say Hello to THAT person!"</b></p>
+    <p>You say: <b>GREET("Jiten")</b> → Robot says: <b>"Hello, Jiten!"</b></p>
+    <p>You say: <b>GREET("Mom")</b> → Robot says: <b>"Hello, Mom!"</b></p>
+    <p>Same robot, different name each time!</p>
+  </div>
+
+  <p>Click a name to give it to the robot:</p>
+
+  <div class="scene">
+    <div class="robot">&#129302;</div>
+    <p><b>Robot's job:</b> Say hello to whoever you give it!</p>
+
+    <button class="big-btn" onclick="greetName('Jiten')">greet("Jiten")</button>
+    <button class="big-btn" onclick="greetName('Mom')">greet("Mom")</button>
+    <button class="big-btn" onclick="greetName('Teacher')">greet("Teacher")</button>
+
+    <div id="nameResult"></div>
+
+    <div class="explain" style="text-align: left; margin-top: 20px;">
+      <p>In code:</p>
+      <p style="font-family: Courier New; color: #a6e3a1; background: #1e1e2e; padding: 15px; border-radius: 8px;">
+        <span style="color: #f9e64f;">function</span> greet(<span style="color: #cba6f7;">name</span>) {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;show "Hello, " + <span style="color: #cba6f7;">name</span> + "!"<br>
+        }<br><br>
+        greet("Jiten"); &nbsp; <span style="color: #888;">// Hello, Jiten!</span><br>
+        greet("Mom"); &nbsp;&nbsp;&nbsp; <span style="color: #888;">// Hello, Mom!</span>
+      </p>
+      <p>The <span style="color: #cba6f7; font-weight: bold;">name</span> inside ( ) is like a <b>slot</b> — you put different things in each time!</p>
+    </div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 4: MACHINE      -->
+  <!-- ==================== -->
+  <h2><span class="step-number">4</span> Try It: Math Machine</h2>
+
+  <p>Let's build a robot that <b>doubles</b> any number you give it!</p>
+
+  <div class="story-box">
+    <p>&#129302; <b>"Give me a number, and I'll multiply it by 2!"</b></p>
+    <p>You give: <b>5</b> → Robot gives back: <b>10</b></p>
+    <p>You give: <b>3</b> → Robot gives back: <b>6</b></p>
+  </div>
+
+  <p>Click a number to put it in the machine:</p>
+
+  <div class="scene">
+    <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <button class="big-btn" onclick="doubleNum(3)" style="font-size: 30px;">3</button>
+        <button class="big-btn" onclick="doubleNum(5)" style="font-size: 30px;">5</button>
+        <button class="big-btn" onclick="doubleNum(7)" style="font-size: 30px;">7</button>
+        <button class="big-btn" onclick="doubleNum(12)" style="font-size: 30px;">12</button>
+      </div>
+    </div>
+
+    <div id="machineDisplay" class="hidden">
+      <div class="machine-box">
+        <div class="machine-label">&#129302; DOUBLE MACHINE</div>
+        <div class="machine-arrow">&#11015;</div>
+        <div class="machine-input" id="machineIn">?</div>
+        <div class="machine-arrow">&#11015;</div>
+        <div style="font-size: 22px;">&#215; 2</div>
+        <div class="machine-arrow">&#11015;</div>
+        <div class="machine-output" id="machineOut">?</div>
+      </div>
+    </div>
+
+    <div class="explain" style="text-align: left; margin-top: 20px;">
+      <p>In code:</p>
+      <p style="font-family: Courier New; color: #a6e3a1; background: #1e1e2e; padding: 15px; border-radius: 8px;">
+        <span style="color: #f9e64f;">function</span> double(<span style="color: #cba6f7;">number</span>) {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f9e64f;">return</span> <span style="color: #cba6f7;">number</span> * 2;<br>
+        }<br><br>
+        double(5); &nbsp; <span style="color: #888;">// gives back 10</span>
+      </p>
+      <p><span class="highlight">return</span> = "give back the answer"</p>
+    </div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- STEP 5: YOUR ROBOT   -->
+  <!-- ==================== -->
+  <h2><span class="step-number">5</span> Build Your Own Robot!</h2>
+
+  <p>Type a name and a job, and we'll build a robot!</p>
+
+  <div class="scene">
+    <div style="margin: 15px 0;">
+      <label style="font-size: 20px; display: block; margin-bottom: 8px;">Robot's name:</label>
+      <input type="text" id="robotName" placeholder="e.g. myHelper"
+        style="padding: 15px; font-size: 20px; border-radius: 10px; border: 2px solid #89dceb;
+        background-color: #45475a; color: #a6e3a1; width: 250px;">
+    </div>
+    <div style="margin: 15px 0;">
+      <label style="font-size: 20px; display: block; margin-bottom: 8px;">What should it say?</label>
+      <input type="text" id="robotMessage" placeholder="e.g. I love pizza!"
+        style="padding: 15px; font-size: 20px; border-radius: 10px; border: 2px solid #89dceb;
+        background-color: #45475a; color: #a6e3a1; width: 250px;">
+    </div>
+
+    <button class="big-btn" onclick="buildRobot()">Build My Robot! &#129302;</button>
+    <button class="big-btn" id="callRobotBtn" onclick="callRobot()" class="hidden" style="display:none; background-color: #89dceb;">
+      Call My Robot! &#128227;
+    </button>
+
+    <div id="robotCode" class="hidden"></div>
+    <div id="robotResult"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- QUIZ                 -->
+  <!-- ==================== -->
+  <h2><span class="step-number">6</span> Quick Quiz!</h2>
+
+  <div class="story-box">
+    <p>What is a <b>function</b>?</p>
+  </div>
+
+  <button class="big-btn" onclick="quiz('a')" style="background-color: #89dceb; display: block; margin: 10px 0; text-align: left;">
+    A) A type of variable
+  </button>
+  <button class="big-btn" onclick="quiz('b')" style="background-color: #89dceb; display: block; margin: 10px 0; text-align: left;">
+    B) A reusable robot that does a job for you
+  </button>
+  <button class="big-btn" onclick="quiz('c')" style="background-color: #89dceb; display: block; margin: 10px 0; text-align: left;">
+    C) A way to delete code
+  </button>
+
+  <div id="quizResult"></div>
+
+  <!-- ==================== -->
+  <!-- WHAT YOU LEARNED     -->
+  <!-- ==================== -->
+  <h2>What You Learned &#127891;</h2>
+  <div class="explain">
+    <p><span class="highlight">function</span> = a robot helper that does a job</p>
+    <p>You <b>teach</b> it once, then <b>call</b> it whenever you want</p>
+    <p>You can <b>give</b> it information (like a name or number)</p>
+    <p>It can <b>give back</b> an answer with <span class="highlight">return</span></p>
+  </div>
+
+  <p style="font-size: 22px; margin-top: 20px;">
+    You now know <b>Variables</b>, <b>If/Else</b>, and <b>Functions</b>!
+    <br><br>
+    That's everything we need! Tell me when you're ready and we'll
+    <b style="color: #f9e64f; font-size: 26px;">BUILD THE MATH GAME!</b> &#127918;&#127881;
+  </p>
+
+  <script>
+    // --- Step 2: Greet robot ---
+    var greetCount = 0;
+    function greetRobot() {
+      greetCount++;
+      var messages = [
+        "Hello, friend! &#128075;",
+        "Hello again, friend! &#128522;",
+        "Hello AGAIN! You like calling me! &#128513;",
+        "OK OK I'm here! Hello! &#128516;",
+        "You really love this button! HELLO! &#129315;"
+      ];
+      var msg = greetCount <= 5 ? messages[greetCount - 1] : "Hello x" + greetCount + "! &#129302;";
+      document.getElementById("greetResult").innerHTML =
+        '<div class="result-box result-yes">' + msg + '</div>';
+    }
+
+    // --- Step 3: Greet with name ---
+    function greetName(name) {
+      document.getElementById("nameResult").innerHTML =
+        '<div class="result-box result-yes">&#129302; "Hello, ' + name + '!"</div>';
+    }
+
+    // --- Step 4: Double machine ---
+    function doubleNum(num) {
+      document.getElementById("machineDisplay").className = "";
+      document.getElementById("machineIn").textContent = "You put in: " + num;
+      document.getElementById("machineOut").textContent = "Out comes: " + (num * 2) + "!";
+    }
+
+    // --- Step 5: Build your robot ---
+    var myRobotName = "";
+    var myRobotMsg = "";
+
+    function buildRobot() {
+      myRobotName = document.getElementById("robotName").value.trim();
+      myRobotMsg = document.getElementById("robotMessage").value.trim();
+
+      if (!myRobotName || !myRobotMsg) {
+        document.getElementById("robotResult").innerHTML =
+          '<div class="result-box result-no">Fill in both boxes first!</div>';
+        return;
+      }
+
+      document.getElementById("callRobotBtn").style.display = "inline-block";
+
+      document.getElementById("robotCode").className = "";
+      document.getElementById("robotCode").innerHTML =
+        '<div class="explain" style="text-align: left; margin-top: 15px;">' +
+        '<p>You just built this function:</p>' +
+        '<p style="font-family: Courier New; color: #a6e3a1; background: #1e1e2e; padding: 15px; border-radius: 8px;">' +
+        '<span style="color: #f9e64f;">function</span> ' + myRobotName + '() {<br>' +
+        '&nbsp;&nbsp;&nbsp;&nbsp;show "' + myRobotMsg + '"<br>' +
+        '}</p></div>';
+
+      document.getElementById("robotResult").innerHTML =
+        '<div class="result-box result-yes">&#129302; Robot "' + myRobotName + '" built! Now click "Call My Robot" to use it!</div>';
+    }
+
+    function callRobot() {
+      document.getElementById("robotResult").innerHTML =
+        '<div class="result-box result-yes">&#129302; ' + myRobotName + '() says: "' + myRobotMsg + '"</div>';
+    }
+
+    // --- Quiz ---
+    function quiz(answer) {
+      var div = document.getElementById("quizResult");
+      if (answer === "b") {
+        div.innerHTML = '<div class="result-box result-yes" style="margin-top:15px;">&#127881; CORRECT! A function is a reusable robot helper that does a job whenever you call it!</div>';
+      } else {
+        div.innerHTML = '<div class="result-box result-no" style="margin-top:15px;">Not quite! Think about the robot idea — a function is a helper that does a job for you. Try again!</div>';
+      }
+    }
+  </script>
+
+</body>
+</html>

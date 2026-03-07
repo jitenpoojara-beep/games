@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 5 - How the Game Works!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #f9e64f; font-size: 32px; }
+    h2 { color: #89dceb; font-size: 24px; margin-top: 40px; }
+    p { font-size: 20px; line-height: 1.8; }
+
+    .step-number {
+      background-color: #f9e64f;
+      color: #1e1e2e;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 22px;
+      margin-right: 10px;
+    }
+
+    .explain {
+      background-color: #313244;
+      border-left: 6px solid #cba6f7;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+
+    .code-block {
+      background-color: #45475a;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: "Courier New", monospace;
+      font-size: 17px;
+      color: #a6e3a1;
+      margin: 15px 0;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    .keyword { color: #f9e64f; font-weight: bold; }
+    .comment { color: #888; }
+    .string { color: #f38ba8; }
+    .func-name { color: #89dceb; }
+    .number { color: #cba6f7; }
+
+    .highlight { color: #f9e64f; font-weight: bold; }
+    .green { color: #a6e3a1; font-weight: bold; }
+    .pink { color: #f38ba8; font-weight: bold; }
+    .blue { color: #89dceb; font-weight: bold; }
+
+    .story-box {
+      background-color: #313244;
+      border-left: 6px solid #f9e64f;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 22px;
+      line-height: 2;
+    }
+
+    .connect-box {
+      background-color: #313244;
+      border-left: 6px solid #a6e3a1;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 15px 0;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+
+    .big-btn {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 18px 35px;
+      font-size: 22px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 10px 10px 0;
+    }
+
+    .big-btn:hover {
+      background-color: #f9e64f;
+      transform: scale(1.05);
+    }
+
+    .scene {
+      background-color: #313244;
+      border: 3px solid #89dceb;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 22px;
+    }
+
+    .output-box {
+      background-color: #000000;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+      font-size: 20px;
+      min-height: 30px;
+    }
+
+    .output-line { color: #a6e3a1; margin: 5px 0; }
+
+    .result-yes {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .result-no {
+      background-color: #f38ba8;
+      color: #1e1e2e;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .flow-chart {
+      background-color: #45475a;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      font-size: 20px;
+      line-height: 2.2;
+      text-align: center;
+    }
+
+    .flow-arrow { color: #f9e64f; font-size: 24px; }
+    .flow-box {
+      display: inline-block;
+      background-color: #313244;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 8px 16px;
+      margin: 5px;
+    }
+
+    .mini-game {
+      background-color: #313244;
+      border: 3px solid #f9e64f;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .mini-question {
+      font-size: 36px;
+      color: #f9e64f;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .mini-input {
+      padding: 12px;
+      font-size: 28px;
+      border-radius: 10px;
+      border: 3px solid #89dceb;
+      background-color: #45475a;
+      color: #a6e3a1;
+      width: 100px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 5: How the Math Game Works! &#128736;</h1>
+
+  <div class="story-box">
+    <p>You already know <b>Variables</b>, <b>If/Else</b>, and <b>Functions</b>.</p>
+    <p>The math game uses ALL of them! Let me show you how, piece by piece.</p>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 1: THE VARIABLES -->
+  <!-- ==================== -->
+  <h2><span class="step-number">1</span> The Variables (What the game remembers)</h2>
+
+  <p>The game needs to <b>remember</b> things. That's what variables are for!</p>
+
+  <div class="code-block">
+    <span class="keyword">let</span> score = <span class="number">0</span>;        <span class="comment">// How many points you have</span><br>
+    <span class="keyword">let</span> lives = <span class="number">3</span>;        <span class="comment">// How many hearts left</span><br>
+    <span class="keyword">let</span> streak = <span class="number">0</span>;       <span class="comment">// How many correct in a row</span><br>
+    <span class="keyword">let</span> timeLeft = <span class="number">60</span>;    <span class="comment">// Seconds remaining</span><br>
+    <span class="keyword">let</span> level = <span class="number">1</span>;        <span class="comment">// Your current level</span><br>
+    <span class="keyword">let</span> xp = <span class="number">0</span>;           <span class="comment">// Experience points</span><br>
+    <span class="keyword">let</span> currentAnswer = <span class="number">0</span>; <span class="comment">// The correct answer</span>
+  </div>
+
+  <div class="connect-box">
+    <b>&#128161; Connection to Lesson 2:</b> Remember the labeled folders?
+    Each variable is a folder that stores a number. The game changes these numbers as you play!
+  </div>
+
+  <p>Click the buttons to see how the variables change during a game:</p>
+
+  <div class="scene">
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+      <div style="background:#45475a; padding:12px 20px; border-radius:10px; min-width:100px;">
+        <div style="color:#888; font-size:14px;">score</div>
+        <div style="color:#f9e64f; font-size:28px; font-weight:bold;" id="demoScore">0</div>
+      </div>
+      <div style="background:#45475a; padding:12px 20px; border-radius:10px; min-width:100px;">
+        <div style="color:#888; font-size:14px;">lives</div>
+        <div style="color:#f38ba8; font-size:28px; font-weight:bold;" id="demoLives">&#10084;&#10084;&#10084;</div>
+      </div>
+      <div style="background:#45475a; padding:12px 20px; border-radius:10px; min-width:100px;">
+        <div style="color:#888; font-size:14px;">streak</div>
+        <div style="color:#cba6f7; font-size:28px; font-weight:bold;" id="demoStreak">0</div>
+      </div>
+    </div>
+
+    <button class="big-btn" onclick="demoCorrect()">&#9989; Get one right</button>
+    <button class="big-btn" onclick="demoWrong()" style="background:#f38ba8;">&#10060; Get one wrong</button>
+    <button class="big-btn" onclick="demoReset()" style="background:#89dceb;">&#128260; Reset</button>
+
+    <div class="output-box" id="demoOutput"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 2: MAKING A QUESTION -->
+  <!-- ==================== -->
+  <h2><span class="step-number">2</span> Making a Random Question (Functions + Variables)</h2>
+
+  <p>The game needs to make a <b>new question</b> every time. Here's how:</p>
+
+  <div class="code-block">
+    <span class="comment">// Step 1: Pick two random numbers</span><br>
+    <span class="keyword">let</span> num1 = <span class="func-name">randomNumber</span>(<span class="number">1</span>, <span class="number">10</span>);<br>
+    <span class="keyword">let</span> num2 = <span class="func-name">randomNumber</span>(<span class="number">1</span>, <span class="number">10</span>);<br><br>
+    <span class="comment">// Step 2: Calculate the correct answer</span><br>
+    <span class="keyword">let</span> currentAnswer = num1 + num2;<br><br>
+    <span class="comment">// Step 3: Show the question</span><br>
+    <span class="func-name">show</span>( num1 + <span class="string">" + "</span> + num2 + <span class="string">" = ?"</span> );
+  </div>
+
+  <div class="connect-box">
+    <b>&#128161; Connection to Lesson 4:</b> <span class="blue">randomNumber()</span> is a <b>function</b> (a robot helper)!
+    You give it a minimum and maximum number, and it picks a random one.
+  </div>
+
+  <p>Click to generate random questions — see how it works!</p>
+
+  <div class="scene">
+    <button class="big-btn" onclick="demoNewQuestion()">&#128260; Generate new question</button>
+    <div class="output-box" id="questionOutput"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 3: CHECKING THE ANSWER -->
+  <!-- ==================== -->
+  <h2><span class="step-number">3</span> Checking the Answer (If/Else!)</h2>
+
+  <p>When you type an answer, the game uses <b>if/else</b> to check it:</p>
+
+  <div class="code-block">
+    <span class="keyword">let</span> guess = what you typed;<br>
+    <span class="keyword">let</span> currentAnswer = the real answer;<br><br>
+
+    <span class="keyword">if</span> (guess === currentAnswer) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// YES! Correct!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;score = score + <span class="number">10</span>;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;streak = streak + <span class="number">1</span>;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="func-name">show</span>(<span class="string">"Correct!"</span>);<br>
+    } <span class="keyword">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// NO! Wrong!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;lives = lives - <span class="number">1</span>;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;streak = <span class="number">0</span>;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="func-name">show</span>(<span class="string">"Wrong!"</span>);<br>
+    }
+  </div>
+
+  <div class="connect-box">
+    <b>&#128161; Connection to Lesson 3:</b> This is just a YES/NO question!<br>
+    <b>If</b> the guess matches the answer → add points<br>
+    <b>Else</b> → lose a life
+  </div>
+
+  <p>Try it! Solve the problem below:</p>
+
+  <div class="mini-game">
+    <div id="miniQ" class="mini-question">3 + 5 = ?</div>
+    <input type="number" class="mini-input" id="miniInput" placeholder="?">
+    <button class="big-btn" onclick="miniCheck()">Check!</button>
+    <div class="output-box" id="miniOutput"></div>
+    <div id="miniCode" style="text-align:left;"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 4: STREAK BONUS -->
+  <!-- ==================== -->
+  <h2><span class="step-number">4</span> Streak Bonus (If inside If!)</h2>
+
+  <p>When you get many correct in a row, the game gives you <b>bonus points</b>:</p>
+
+  <div class="code-block">
+    <span class="keyword">if</span> (guess === currentAnswer) {<br><br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;streak = streak + <span class="number">1</span>;<br><br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (streak >= <span class="number">5</span>) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;points = <span class="number">30</span>;  <span class="comment">// SUPER STREAK!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;} <span class="keyword">else if</span> (streak >= <span class="number">3</span>) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;points = <span class="number">20</span>;  <span class="comment">// STREAK!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;} <span class="keyword">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;points = <span class="number">10</span>;  <span class="comment">// Normal</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;}<br><br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;score = score + points;<br>
+    }
+  </div>
+
+  <div class="explain">
+    <b>New trick: <span class="highlight">else if</span></b><br><br>
+    Sometimes you need MORE than 2 choices. <span class="highlight">else if</span> adds more options:<br><br>
+    <b>if</b> (streak is 5+) → 30 points<br>
+    <b>else if</b> (streak is 3+) → 20 points<br>
+    <b>else</b> → 10 points<br><br>
+    It's like: "If it's hot, wear shorts. <b>Else if</b> it's warm, wear a t-shirt. <b>Else</b> wear a jacket."
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 5: THE TIMER -->
+  <!-- ==================== -->
+  <h2><span class="step-number">5</span> The Countdown Timer (New concept!)</h2>
+
+  <p>The timer counts down every second. Here's how it works:</p>
+
+  <div class="code-block">
+    <span class="keyword">let</span> timeLeft = <span class="number">60</span>;<br><br>
+
+    <span class="comment">// Every 1 second, do this:</span><br>
+    <span class="func-name">everySecond</span>(<span class="keyword">function</span>() {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;timeLeft = timeLeft - <span class="number">1</span>;   <span class="comment">// Remove 1 second</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="func-name">show</span>(timeLeft + <span class="string">"s"</span>);    <span class="comment">// Show on screen</span><br><br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (timeLeft <= <span class="number">0</span>) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="func-name">endGame</span>();           <span class="comment">// Time's up!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+    });
+  </div>
+
+  <div class="explain">
+    <b>New concept: <span class="highlight">setInterval</span></b><br><br>
+    It's like setting an alarm that rings <b>every second</b>.<br>
+    Each ring: subtract 1 from timeLeft.<br>
+    When timeLeft hits 0: game over!
+  </div>
+
+  <p>See it in action:</p>
+
+  <div class="scene">
+    <div style="font-size: 50px; font-weight: bold; color: #f9e64f;" id="timerDemo">10</div>
+    <button class="big-btn" onclick="startTimerDemo()">Start timer!</button>
+    <button class="big-btn" onclick="stopTimerDemo()" style="background:#f38ba8;">Stop</button>
+    <div class="output-box" id="timerOutput"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 6: LEVELS -->
+  <!-- ==================== -->
+  <h2><span class="step-number">6</span> Level System (Variables + If/Else)</h2>
+
+  <p>The level system tracks your <b>XP</b> (experience points):</p>
+
+  <div class="code-block">
+    <span class="keyword">let</span> level = <span class="number">1</span>;<br>
+    <span class="keyword">let</span> xp = <span class="number">0</span>;<br>
+    <span class="keyword">let</span> xpNeeded = <span class="number">50</span>;<br><br>
+
+    <span class="comment">// When you answer correctly:</span><br>
+    xp = xp + <span class="number">10</span>;<br><br>
+
+    <span class="comment">// Check if you leveled up:</span><br>
+    <span class="keyword">if</span> (xp >= xpNeeded) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;level = level + <span class="number">1</span>;   <span class="comment">// LEVEL UP!</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;xp = <span class="number">0</span>;              <span class="comment">// Reset XP</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="func-name">show</span>(<span class="string">"LEVEL UP!"</span>);<br>
+    }
+  </div>
+
+  <div class="connect-box">
+    <b>&#128161; It's just variables + if/else!</b><br>
+    Every correct answer adds XP to the xp variable.<br>
+    If xp reaches the goal → level goes up and xp resets!
+  </div>
+
+  <p>Click to earn XP and watch yourself level up:</p>
+
+  <div class="scene">
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+      <div style="background:#45475a; padding:12px 20px; border-radius:10px;">
+        <div style="color:#888; font-size:14px;">level</div>
+        <div style="color:#f9e64f; font-size:28px; font-weight:bold;" id="lvlDemo">1</div>
+      </div>
+      <div style="background:#45475a; padding:12px 20px; border-radius:10px; min-width:150px;">
+        <div style="color:#888; font-size:14px;">xp</div>
+        <div style="color:#cba6f7; font-size:28px; font-weight:bold;" id="xpDemo">0 / 50</div>
+      </div>
+    </div>
+    <div style="background:#45475a; border-radius:10px; height:20px; max-width:300px; margin:0 auto 15px auto; overflow:hidden;">
+      <div id="xpBarDemo" style="background:linear-gradient(90deg,#cba6f7,#f9e64f); height:100%; width:0%; transition:width 0.3s; border-radius:10px;"></div>
+    </div>
+    <button class="big-btn" onclick="earnXP()">&#9989; Answer correct (+10 XP)</button>
+    <button class="big-btn" onclick="resetLvlDemo()" style="background:#89dceb;">&#128260; Reset</button>
+    <div class="output-box" id="lvlOutput"></div>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 7: SOUND EFFECTS -->
+  <!-- ==================== -->
+  <h2><span class="step-number">7</span> Sound Effects (Bonus!)</h2>
+
+  <p>Sounds are made by telling the computer to <b>vibrate the speaker</b> at a certain speed:</p>
+
+  <div class="code-block">
+    <span class="comment">// Make a beep sound</span><br>
+    <span class="func-name">playTone</span>(<span class="number">523</span>, <span class="number">0.1</span>);  <span class="comment">// frequency 523, for 0.1 seconds</span><br><br>
+
+    <span class="comment">// Correct sound = 3 beeps going UP</span><br>
+    <span class="func-name">playTone</span>(<span class="number">523</span>);  <span class="comment">// low beep</span><br>
+    <span class="func-name">playTone</span>(<span class="number">659</span>);  <span class="comment">// middle beep</span><br>
+    <span class="func-name">playTone</span>(<span class="number">784</span>);  <span class="comment">// high beep  &#127926;</span><br><br>
+
+    <span class="comment">// Wrong sound = 2 beeps going DOWN</span><br>
+    <span class="func-name">playTone</span>(<span class="number">200</span>);  <span class="comment">// medium buzz</span><br>
+    <span class="func-name">playTone</span>(<span class="number">150</span>);  <span class="comment">// low buzz    &#128148;</span>
+  </div>
+
+  <div class="explain">
+    <b>Higher number = higher pitch.</b><br>
+    523 = middle C note on a piano. 784 = a higher note. 150 = a low buzz.
+  </div>
+
+  <p>Click to hear the sounds:</p>
+
+  <div class="scene">
+    <button class="big-btn" onclick="playSoundCorrect()">&#127926; Correct sound</button>
+    <button class="big-btn" onclick="playSoundWrong()" style="background:#f38ba8;">&#128148; Wrong sound</button>
+    <button class="big-btn" onclick="playSoundLevelUp()" style="background:#f9e64f;">&#11088; Level up!</button>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 8: THE BIG PICTURE -->
+  <!-- ==================== -->
+  <h2><span class="step-number">8</span> The Big Picture</h2>
+
+  <p>Here's how ALL the pieces fit together when you play the game:</p>
+
+  <div class="flow-chart">
+    <span class="flow-box">&#127918; Player clicks START</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box">Set score=0, lives=3, timer=60</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box">&#128260; Generate random question</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box">&#9997; Player types answer</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box" style="border-color:#f9e64f;">&#129504; if (guess === answer)</span><br>
+    <span class="flow-arrow">&#11015; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &#11015;</span><br>
+    <span class="flow-box" style="border-color:#a6e3a1;">&#9989; YES: score +10</span>
+    &nbsp;&nbsp;
+    <span class="flow-box" style="border-color:#f38ba8;">&#10060; NO: lives -1</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box">&#128260; Next question (go back up!)</span><br>
+    <span class="flow-arrow">&#11015;</span><br>
+    <span class="flow-box" style="border-color:#f9e64f;">if (timer=0 OR lives=0) → GAME OVER</span>
+  </div>
+
+  <div class="story-box">
+    <p><b>That's the whole game!</b> It's just:</p>
+    <p>&#128230; <b>Variables</b> to remember things (score, lives, timer)</p>
+    <p>&#129504; <b>If/Else</b> to make decisions (correct or wrong?)</p>
+    <p>&#129302; <b>Functions</b> to do jobs (newQuestion, checkAnswer, playSound)</p>
+    <p>&#128257; <b>A loop</b> that keeps repeating: question → answer → check → next question</p>
+    <p>You already know all of this! &#127881;</p>
+  </div>
+
+  <!-- ==================== -->
+  <!-- PART 9: LEADERBOARD -->
+  <!-- ==================== -->
+  <h2><span class="step-number">9</span> Saving Scores (Leaderboard)</h2>
+
+  <p>When the game ends, we <b>save</b> the score so it's there next time you open the game:</p>
+
+  <div class="code-block">
+    <span class="comment">// Save to the browser's memory</span><br>
+    <span class="func-name">localStorage.setItem</span>(<span class="string">"leaderboard"</span>, scores);<br><br>
+
+    <span class="comment">// Load it back later</span><br>
+    <span class="keyword">let</span> scores = <span class="func-name">localStorage.getItem</span>(<span class="string">"leaderboard"</span>);
+  </div>
+
+  <div class="explain">
+    <b><span class="highlight">localStorage</span></b> is like a secret drawer in your browser.<br>
+    You put something in it, close the browser, come back later, and it's still there!<br>
+    That's how the leaderboard remembers your scores.
+  </div>
+
+  <!-- ==================== -->
+  <!-- SUMMARY -->
+  <!-- ==================== -->
+  <h2>You Understand the Whole Game! &#127891;</h2>
+
+  <div class="story-box">
+    <p>The math game is built with just <b>4 ideas</b>:</p>
+    <p>1. &#128230; <b>Variables</b> — store score, lives, timer, level, XP</p>
+    <p>2. &#129504; <b>If/Else</b> — check answers, check streaks, check if game over</p>
+    <p>3. &#129302; <b>Functions</b> — newQuestion(), checkAnswer(), playSound(), endGame()</p>
+    <p>4. &#128264; <b>Browser tools</b> — setInterval (timer), localStorage (save scores), Audio (sounds)</p>
+    <p><br>That's how EVERY game works — just these building blocks, put together! &#128640;</p>
+  </div>
+
+  <script>
+    // ===== PART 1: VARIABLE DEMO =====
+    var dScore = 0, dLives = 3, dStreak = 0;
+
+    function demoCorrect() {
+      dScore += 10;
+      dStreak++;
+      document.getElementById("demoScore").textContent = dScore;
+      document.getElementById("demoStreak").textContent = dStreak;
+      document.getElementById("demoOutput").innerHTML =
+        '<div class="output-line">> score = ' + dScore + ' (was ' + (dScore - 10) + ', added 10)</div>' +
+        '<div class="output-line">> streak = ' + dStreak + '</div>';
+    }
+
+    function demoWrong() {
+      if (dLives <= 0) return;
+      dLives--;
+      dStreak = 0;
+      var hearts = "";
+      for (var i = 0; i < dLives; i++) hearts += "\u2764";
+      for (var j = dLives; j < 3; j++) hearts += "\uD83D\uDDA4";
+      document.getElementById("demoLives").innerHTML = hearts || "\uD83D\uDDA4\uD83D\uDDA4\uD83D\uDDA4";
+      document.getElementById("demoStreak").textContent = dStreak;
+      document.getElementById("demoOutput").innerHTML =
+        '<div class="output-line">> lives = ' + dLives + ' (lost 1 life!)</div>' +
+        '<div class="output-line">> streak = 0 (reset!)</div>';
+      if (dLives <= 0) {
+        document.getElementById("demoOutput").innerHTML += '<div class="output-line" style="color:#f38ba8;">> GAME OVER! No lives left!</div>';
+      }
+    }
+
+    function demoReset() {
+      dScore = 0; dLives = 3; dStreak = 0;
+      document.getElementById("demoScore").textContent = "0";
+      document.getElementById("demoLives").innerHTML = "\u2764\u2764\u2764";
+      document.getElementById("demoStreak").textContent = "0";
+      document.getElementById("demoOutput").innerHTML = '<div class="output-line">> All variables reset!</div>';
+    }
+
+    // ===== PART 2: QUESTION DEMO =====
+    function demoNewQuestion() {
+      var num1 = Math.floor(Math.random() * 10) + 1;
+      var num2 = Math.floor(Math.random() * 10) + 1;
+      var ops = ["+", "-", "\u00d7"];
+      var op = ops[Math.floor(Math.random() * 3)];
+      var answer;
+      if (op === "+") answer = num1 + num2;
+      else if (op === "-") { if (num1 < num2) { var t = num1; num1 = num2; num2 = t; } answer = num1 - num2; }
+      else answer = num1 * num2;
+
+      document.getElementById("questionOutput").innerHTML =
+        '<div class="output-line">> num1 = ' + num1 + ' (random!)</div>' +
+        '<div class="output-line">> num2 = ' + num2 + ' (random!)</div>' +
+        '<div class="output-line">> operator = ' + op + '</div>' +
+        '<div class="output-line">> question: ' + num1 + ' ' + op + ' ' + num2 + ' = ?</div>' +
+        '<div class="output-line">> currentAnswer = ' + answer + ' (saved secretly!)</div>';
+    }
+
+    // ===== PART 3: MINI CHECK =====
+    var miniAnswer = 8;
+    var miniN1 = 3, miniN2 = 5;
+
+    function newMiniQ() {
+      miniN1 = Math.floor(Math.random() * 10) + 1;
+      miniN2 = Math.floor(Math.random() * 10) + 1;
+      miniAnswer = miniN1 + miniN2;
+      document.getElementById("miniQ").textContent = miniN1 + " + " + miniN2 + " = ?";
+      document.getElementById("miniInput").value = "";
+      document.getElementById("miniOutput").innerHTML = "";
+      document.getElementById("miniCode").innerHTML = "";
+    }
+
+    function miniCheck() {
+      var guess = Number(document.getElementById("miniInput").value);
+      var codeHTML = '<div class="explain" style="text-align:left; font-size:16px; margin-top:15px;">' +
+        '<p>The computer ran this code:</p>' +
+        '<p style="font-family:Courier New; color:#a6e3a1;">guess = ' + guess + '</p>' +
+        '<p style="font-family:Courier New; color:#a6e3a1;">currentAnswer = ' + miniAnswer + '</p>' +
+        '<p style="font-family:Courier New; color:#a6e3a1;">if (' + guess + ' === ' + miniAnswer + ') → ';
+
+      if (guess === miniAnswer) {
+        document.getElementById("miniOutput").innerHTML = '<div class="result-yes">&#127881; Correct!</div>';
+        codeHTML += '<b style="color:#a6e3a1;">YES!</b> → score + 10</p></div>';
+      } else {
+        document.getElementById("miniOutput").innerHTML = '<div class="result-no">&#128533; Wrong! Answer was ' + miniAnswer + '</div>';
+        codeHTML += '<b style="color:#f38ba8;">NO!</b> → lives - 1</p></div>';
+      }
+      document.getElementById("miniCode").innerHTML = codeHTML;
+
+      setTimeout(newMiniQ, 2000);
+    }
+
+    document.getElementById("miniInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") miniCheck();
+    });
+
+    // ===== PART 5: TIMER DEMO =====
+    var timerDemoVal = 10;
+    var timerDemoInterval = null;
+
+    function startTimerDemo() {
+      stopTimerDemo();
+      timerDemoVal = 10;
+      document.getElementById("timerDemo").textContent = timerDemoVal;
+      document.getElementById("timerDemo").style.color = "#f9e64f";
+      document.getElementById("timerOutput").innerHTML = '<div class="output-line">> Timer started! timeLeft = 10</div>';
+
+      timerDemoInterval = setInterval(function() {
+        timerDemoVal--;
+        document.getElementById("timerDemo").textContent = timerDemoVal;
+        if (timerDemoVal <= 3) {
+          document.getElementById("timerDemo").style.color = "#f38ba8";
+        }
+        if (timerDemoVal <= 0) {
+          clearInterval(timerDemoInterval);
+          document.getElementById("timerOutput").innerHTML =
+            '<div class="output-line" style="color:#f38ba8;">> timeLeft = 0 → GAME OVER!</div>';
+        }
+      }, 1000);
+    }
+
+    function stopTimerDemo() {
+      clearInterval(timerDemoInterval);
+      timerDemoVal = 10;
+      document.getElementById("timerDemo").textContent = "10";
+      document.getElementById("timerDemo").style.color = "#f9e64f";
+      document.getElementById("timerOutput").innerHTML = '<div class="output-line">> Timer stopped and reset.</div>';
+    }
+
+    // ===== PART 6: LEVEL DEMO =====
+    var lvlD = 1, xpD = 0, xpNeedD = 50;
+
+    function earnXP() {
+      xpD += 10;
+      var msg = "> xp = " + xpD + " / " + xpNeedD;
+
+      if (xpD >= xpNeedD) {
+        lvlD++;
+        xpD = 0;
+        xpNeedD = 50 + (lvlD - 1) * 30;
+        msg += " → LEVEL UP! Now level " + lvlD + "! Next: " + xpNeedD + " XP";
+      }
+
+      document.getElementById("lvlDemo").textContent = lvlD;
+      document.getElementById("xpDemo").textContent = xpD + " / " + xpNeedD;
+      document.getElementById("xpBarDemo").style.width = ((xpD / xpNeedD) * 100) + "%";
+      document.getElementById("lvlOutput").innerHTML = '<div class="output-line">' + msg + '</div>';
+    }
+
+    function resetLvlDemo() {
+      lvlD = 1; xpD = 0; xpNeedD = 50;
+      document.getElementById("lvlDemo").textContent = "1";
+      document.getElementById("xpDemo").textContent = "0 / 50";
+      document.getElementById("xpBarDemo").style.width = "0%";
+      document.getElementById("lvlOutput").innerHTML = '<div class="output-line">> Reset! Level 1, 0 XP</div>';
+    }
+
+    // ===== PART 7: SOUND DEMO =====
+    var audioCtx = null;
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    function playT(freq, dur, type, vol) {
+      try {
+        var ctx = getCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = type || "sine";
+        osc.frequency.value = freq;
+        gain.gain.value = vol || 0.3;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+      } catch(e) {}
+    }
+
+    function playSoundCorrect() {
+      playT(523, 0.1); setTimeout(function(){playT(659,0.1);},100); setTimeout(function(){playT(784,0.15);},200);
+    }
+    function playSoundWrong() {
+      playT(200, 0.15, "square", 0.2); setTimeout(function(){playT(150,0.3,"square",0.2);},150);
+    }
+    function playSoundLevelUp() {
+      playT(523,0.12); setTimeout(function(){playT(659,0.12);},120);
+      setTimeout(function(){playT(784,0.12);},240); setTimeout(function(){playT(1047,0.3,undefined,0.35);},360);
+    }
+  </script>
+
+</body>
+</html>

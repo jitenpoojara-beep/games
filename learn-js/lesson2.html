@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lesson 2 - Variables!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #ffffff;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 {
+      color: #f9e64f;
+      font-size: 32px;
+    }
+
+    h2 {
+      color: #89dceb;
+      font-size: 22px;
+      margin-top: 30px;
+    }
+
+    .lesson-box {
+      background-color: #313244;
+      border-left: 5px solid #f9e64f;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .output-box {
+      background-color: #000000;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      min-height: 50px;
+    }
+
+    .output-line {
+      color: #a6e3a1;
+      margin: 5px 0;
+    }
+
+    .try-it {
+      background-color: #a6e3a1;
+      color: #1e1e2e;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 5px;
+    }
+
+    .try-it:hover {
+      background-color: #f9e64f;
+    }
+
+    .code-box {
+      background-color: #45475a;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      color: #a6e3a1;
+      margin: 10px 0;
+    }
+
+    .highlight {
+      color: #f9e64f;
+      font-weight: bold;
+    }
+
+    .emoji {
+      font-size: 24px;
+    }
+
+    textarea.playground {
+      background-color: #45475a;
+      color: #a6e3a1;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      width: 100%;
+      height: 120px;
+      border: 2px solid #89dceb;
+      border-radius: 10px;
+      padding: 15px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    .clear-btn {
+      background-color: #f38ba8;
+      color: #1e1e2e;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 5px;
+    }
+
+    .clear-btn:hover {
+      background-color: #f5c2e7;
+    }
+
+    .analogy {
+      background-color: #313244;
+      border-left: 5px solid #cba6f7;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    .challenge-box {
+      background-color: #313244;
+      border-left: 5px solid #a6e3a1;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lesson 2: Variables! <span class="emoji">&#128230;</span></h1>
+
+  <div class="lesson-box">
+    <strong>What you'll learn:</strong> How to store information using <span class="highlight">variables</span> — like boxes that hold stuff!
+  </div>
+
+  <!-- WHAT IS A VARIABLE -->
+  <h2>What is a Variable? <span class="emoji">&#129300;</span></h2>
+
+  <div class="analogy">
+    <p>Imagine you have <strong>labeled boxes</strong> in your room:</p>
+    <p><span class="emoji">&#128230;</span> A box labeled <span class="highlight">"myName"</span> — inside it you put <strong>"Jiten"</strong></p>
+    <p><span class="emoji">&#128230;</span> A box labeled <span class="highlight">"myAge"</span> — inside it you put <strong>10</strong></p>
+    <p><span class="emoji">&#128230;</span> A box labeled <span class="highlight">"favoriteColor"</span> — inside it you put <strong>"blue"</strong></p>
+    <p>A <strong>variable</strong> is just like that — a named box that stores information!</p>
+  </div>
+
+  <!-- STEP 1 -->
+  <h2>Step 1: Create Your First Variable</h2>
+  <p>We use the word <span class="highlight">let</span> to create a variable:</p>
+
+  <div class="code-box">
+    let myName = "Jiten";<br>
+    console.log(myName);
+  </div>
+
+  <div class="lesson-box">
+    <p><span class="highlight">let</span> = "Hey computer, I want to create a box!"</p>
+    <p><span class="highlight">myName</span> = the label on the box</p>
+    <p><span class="highlight">=</span> means "put this inside the box"</p>
+    <p><span class="highlight">"Jiten"</span> = what goes inside the box</p>
+  </div>
+
+  <button class="try-it" onclick="runStep1()">Run Code! <span class="emoji">&#9654;</span></button>
+  <div class="output-box" id="output1"></div>
+
+  <!-- STEP 2 -->
+  <h2>Step 2: Different Types of Variables</h2>
+  <p>Variables can hold different types of stuff:</p>
+
+  <div class="code-box">
+    let playerName = "Jiten"; &nbsp;&nbsp;&nbsp;// Text (called a "string")<br>
+    let age = 10; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Number<br>
+    let score = 0; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Number<br>
+    let isPlaying = true; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// True or False (called a "boolean")<br><br>
+    console.log("Player: " + playerName);<br>
+    console.log("Age: " + age);<br>
+    console.log("Score: " + score);<br>
+    console.log("Playing: " + isPlaying);
+  </div>
+
+  <div class="lesson-box">
+    <p><span class="highlight">"text"</span> = words go in quotes (called a <strong>String</strong>)</p>
+    <p><span class="highlight">10</span> = numbers have NO quotes (called a <strong>Number</strong>)</p>
+    <p><span class="highlight">true / false</span> = yes or no (called a <strong>Boolean</strong>)</p>
+    <p><span class="highlight">+</span> joins text together (like glue!)</p>
+  </div>
+
+  <button class="try-it" onclick="runStep2()">Run Code! <span class="emoji">&#9654;</span></button>
+  <div class="output-box" id="output2"></div>
+
+  <!-- STEP 3 -->
+  <h2>Step 3: Changing a Variable</h2>
+  <p>You can change what's inside a variable — like swapping what's in your box!</p>
+
+  <div class="code-box">
+    let score = 0;<br>
+    console.log("Score at start: " + score);<br><br>
+    score = 10;<br>
+    console.log("Score after round 1: " + score);<br><br>
+    score = 25;<br>
+    console.log("Score after round 2: " + score);
+  </div>
+
+  <div class="lesson-box">
+    Notice: We only use <span class="highlight">let</span> the FIRST time. After that, just use the name to change it!
+  </div>
+
+  <button class="try-it" onclick="runStep3()">Run Code! <span class="emoji">&#9654;</span></button>
+  <div class="output-box" id="output3"></div>
+
+  <!-- STEP 4: MATH -->
+  <h2>Step 4: Math with Variables! <span class="emoji">&#129518;</span></h2>
+  <p>You can do math with number variables — just like a calculator!</p>
+
+  <div class="code-box">
+    let apples = 5;<br>
+    let oranges = 3;<br><br>
+    let total = apples + oranges;<br>
+    console.log("Total fruits: " + total);<br><br>
+    let difference = apples - oranges;<br>
+    console.log("Difference: " + difference);<br><br>
+    let multiplied = apples * oranges;<br>
+    console.log("Multiplied: " + multiplied);
+  </div>
+
+  <div class="lesson-box">
+    <p><span class="highlight">+</span> = Add</p>
+    <p><span class="highlight">-</span> = Subtract</p>
+    <p><span class="highlight">*</span> = Multiply</p>
+    <p><span class="highlight">/</span> = Divide</p>
+  </div>
+
+  <button class="try-it" onclick="runStep4()">Run Code! <span class="emoji">&#9654;</span></button>
+  <div class="output-box" id="output4"></div>
+
+  <!-- PLAYGROUND -->
+  <h2>Step 5: Your Turn! <span class="emoji">&#127912;</span></h2>
+
+  <div class="challenge-box">
+    <strong>Challenge:</strong> Try creating your own variables! Here are some ideas:<br>
+    <p>1. Make a variable for your best friend's name</p>
+    <p>2. Make a variable for your favorite number</p>
+    <p>3. Add two number variables together</p>
+  </div>
+
+  <textarea class="playground" id="playground">let friendName = "Alex";
+let luckyNumber = 7;
+let doubleIt = luckyNumber * 2;
+
+console.log("My friend: " + friendName);
+console.log("Lucky number: " + luckyNumber);
+console.log("Doubled: " + doubleIt);</textarea>
+  <br>
+  <button class="try-it" onclick="runPlayground()">Run My Code! <span class="emoji">&#128640;</span></button>
+  <button class="clear-btn" onclick="clearPlayground()">Clear <span class="emoji">&#128465;</span></button>
+
+  <div class="output-box" id="output5"></div>
+
+  <!-- WHAT YOU LEARNED -->
+  <h2>What You Learned Today <span class="emoji">&#127891;</span></h2>
+  <div class="lesson-box">
+    <p><span class="highlight">let</span> creates a new variable (a named box)</p>
+    <p><span class="highlight">=</span> puts a value inside the variable</p>
+    <p>Variables can hold <strong>text</strong> ("hello"), <strong>numbers</strong> (42), or <strong>true/false</strong></p>
+    <p><span class="highlight">+</span> with text joins them together</p>
+    <p><span class="highlight">+ - * /</span> with numbers does math</p>
+    <p>You can <strong>change</strong> a variable after creating it</p>
+  </div>
+
+  <p style="font-size: 20px; margin-top: 20px;">
+    Ready for the next lesson? We'll learn about <strong style="color: #f9e64f;">If / Else</strong> —
+    how to make decisions in code! (Like: "If the answer is correct, add a point!")
+    This is where our math game starts to come alive! <span class="emoji">&#127918;</span>
+  </p>
+
+  <script>
+    function showOutput(elementId, text) {
+      var box = document.getElementById(elementId);
+      var line = document.createElement("div");
+      line.className = "output-line";
+      line.textContent = "> " + text;
+      box.appendChild(line);
+    }
+
+    function clearOutput(elementId) {
+      document.getElementById(elementId).innerHTML = "";
+    }
+
+    function runStep1() {
+      clearOutput("output1");
+      var myName = "Jiten";
+      showOutput("output1", myName);
+    }
+
+    function runStep2() {
+      clearOutput("output2");
+      var playerName = "Jiten";
+      var age = 10;
+      var score = 0;
+      var isPlaying = true;
+      showOutput("output2", "Player: " + playerName);
+      showOutput("output2", "Age: " + age);
+      showOutput("output2", "Score: " + score);
+      showOutput("output2", "Playing: " + isPlaying);
+    }
+
+    function runStep3() {
+      clearOutput("output3");
+      var score = 0;
+      showOutput("output3", "Score at start: " + score);
+      score = 10;
+      showOutput("output3", "Score after round 1: " + score);
+      score = 25;
+      showOutput("output3", "Score after round 2: " + score);
+    }
+
+    function runStep4() {
+      clearOutput("output4");
+      var apples = 5;
+      var oranges = 3;
+      var total = apples + oranges;
+      showOutput("output4", "Total fruits: " + total);
+      var difference = apples - oranges;
+      showOutput("output4", "Difference: " + difference);
+      var multiplied = apples * oranges;
+      showOutput("output4", "Multiplied: " + multiplied);
+    }
+
+    function runPlayground() {
+      clearOutput("output5");
+      var code = document.getElementById("playground").value;
+      var originalLog = console.log;
+      console.log = function (msg) {
+        showOutput("output5", msg);
+        originalLog(msg);
+      };
+      try {
+        eval(code);
+      } catch (err) {
+        showOutput("output5", "Oops! Error: " + err.message);
+      }
+      console.log = originalLog;
+    }
+
+    function clearPlayground() {
+      document.getElementById("playground").value = 'let friendName = "Alex";\nlet luckyNumber = 7;\nlet doubleIt = luckyNumber * 2;\n\nconsole.log("My friend: " + friendName);\nconsole.log("Lucky number: " + luckyNumber);\nconsole.log("Doubled: " + doubleIt);';
+      clearOutput("output5");
+    }
+  </script>
+
+</body>
+</html>
