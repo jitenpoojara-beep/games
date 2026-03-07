@@ -185,13 +185,7 @@
     .filter-btn.active { border-color: #f9e64f; background-color: #45475a; }
     .filter-btn:hover { border-color: #89dceb; }
 
-    /* ===== CLOUD SYNC ===== */
-    .sync-status {
-      display: inline-block; padding: 6px 14px; border-radius: 10px;
-      font-size: 14px; margin: 8px 0; font-weight: bold;
-    }
-    .sync-connected { background-color: #a6e3a1; color: #1e1e2e; }
-    .sync-not { background-color: #45475a; color: #888; }
+    /* ===== SHARE SCORES ===== */
     .sync-input {
       padding: 12px; font-size: 16px; border-radius: 12px; border: 3px solid #89dceb;
       background-color: #45475a; color: #a6e3a1; width: 90%; max-width: 400px; text-align: center;
@@ -291,8 +285,7 @@
     <button class="btn btn-purple" onclick="showLeaderboard()">&#127942; Leaderboard</button>
     <button class="btn btn-blue" onclick="showHowToPlay()">&#10067; How to Play</button>
     <br>
-    <div id="syncStatus" class="sync-status sync-not">&#9729; Not Synced</div>
-    <button class="btn btn-blue btn-small" onclick="showSyncScreen()">&#9729; Cloud Sync</button>
+    <button class="btn btn-blue btn-small" onclick="showSyncScreen()">&#128257; Share Scores</button>
 
     <p id="startError"></p>
   </div>
@@ -469,8 +462,8 @@
 
   <!-- ===== SYNC SCREEN ===== -->
   <div class="screen" id="syncScreen">
-    <div class="game-title">&#9729; Cloud Sync</div>
-    <div class="game-subtitle">Play on multiple devices!</div>
+    <div class="game-title">&#128257; Share Scores</div>
+    <div class="game-subtitle">Send your scores to another device!</div>
     <div id="syncContent"></div>
     <br>
     <button class="btn btn-blue" onclick="goToStart()">&#11013; Back</button>
@@ -1060,17 +1053,12 @@
       });
       if (lb.length > 50) lb = lb.slice(0, 50);
       localStorage.setItem("mathGameLeaderboard", JSON.stringify(lb));
-      syncToCloud();
     }
 
     function showLeaderboard() {
       soundClick();
       showScreen("leaderboardScreen");
-      if (cloudRoomId) {
-        syncFromCloud(function() { renderLeaderboard(); });
-      } else {
-        renderLeaderboard();
-      }
+      renderLeaderboard();
     }
 
     function renderLeaderboard() {
@@ -1137,11 +1125,8 @@
 
 
     // =====================
-    // CLOUD SYNC
+    // SHARE SCORES (Link-based - no server needed!)
     // =====================
-    var cloudRoomId = localStorage.getItem("mathCloudRoom") || "";
-    var isSyncing = false;
-
     function showSyncScreen() {
       soundClick();
       showScreen("syncScreen");
@@ -1150,94 +1135,95 @@
 
     function renderSyncScreen() {
       var content = document.getElementById("syncContent");
-      if (cloudRoomId) {
-        var shareUrl = window.location.origin + window.location.pathname + "?room=" + cloudRoomId;
-        content.innerHTML =
-          '<div style="margin:20px 0;">' +
-            '<div style="font-size:24px;color:#a6e3a1;margin-bottom:10px;">&#9989; Connected!</div>' +
-            '<p style="color:#cdd6f4;">Your leaderboard syncs across devices.</p>' +
-            '<p style="color:#888;margin-top:15px;">Share this link to connect another device:</p>' +
-            '<div class="sync-url" id="shareUrl">' + shareUrl + '</div>' +
-            '<button class="btn btn-green btn-small" onclick="copyShareUrl()">&#128203; Copy Link</button>' +
-            '<br><br>' +
-            '<button class="btn btn-pink btn-small" onclick="disconnectCloud()">Disconnect</button>' +
-          '</div>';
+      var lb = getLeaderboard();
+
+      content.innerHTML =
+        '<div style="margin:20px 0;">' +
+          '<div class="htp-section">' +
+            '<div class="htp-title">&#128228; Send Scores to Another Device</div>' +
+            '<div class="htp-text">' +
+              'Click the button below to create a link.<br>' +
+              'Send the link to your other device (text, email, etc).<br>' +
+              'Open it there and your scores will be added!' +
+            '</div>' +
+            '<br>' +
+            (lb.length > 0 ?
+              '<button class="btn btn-green" onclick="exportScores()">&#128279; Create Share Link</button>' +
+              '<div id="shareResult"></div>'
+            :
+              '<p style="color:#888;">No scores to share yet! Play a game first.</p>'
+            ) +
+          '</div>' +
+          '<div class="htp-section">' +
+            '<div class="htp-title">&#128229; Import Scores from Link</div>' +
+            '<div class="htp-text">Paste a share link from your other device:</div>' +
+            '<input type="text" class="sync-input" id="importInput" placeholder="Paste share link here...">' +
+            '<button class="btn btn-purple" onclick="importScores()">Import Scores</button>' +
+            '<div id="importResult"></div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function exportScores() {
+      var lb = getLeaderboard();
+      if (lb.length === 0) { alert("No scores to share!"); return; }
+
+      // Encode leaderboard as base64 in URL
+      try {
+        var jsonStr = JSON.stringify(lb);
+        var encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        var shareUrl = window.location.origin + window.location.pathname + "?scores=" + encoded;
+
+        var resultDiv = document.getElementById("shareResult");
+        resultDiv.innerHTML =
+          '<div class="sync-url" id="shareUrl" style="margin-top:15px;">' + shareUrl + '</div>' +
+          '<button class="btn btn-green btn-small" onclick="copyShareUrl()">&#128203; Copy Link</button>' +
+          '<p style="color:#888;font-size:14px;margin-top:8px;">Send this link to your other device!</p>';
+      } catch(e) {
+        alert("Error creating link. Try again!");
+      }
+    }
+
+    function importScores() {
+      var input = document.getElementById("importInput").value.trim();
+      var resultDiv = document.getElementById("importResult");
+
+      // Extract scores data from URL
+      var scoresData = "";
+      if (input.indexOf("?scores=") !== -1) {
+        scoresData = input.split("?scores=")[1].split("&")[0];
       } else {
-        content.innerHTML =
-          '<div style="margin:20px 0;">' +
-            '<div class="htp-section">' +
-              '<div class="htp-title">&#127381; Create Cloud Room</div>' +
-              '<div class="htp-text">Start a new cloud save. Share the link with your other devices.</div>' +
-              '<br><button class="btn btn-green" id="createRoomBtn" onclick="createCloudRoom()">Create Room</button>' +
-            '</div>' +
-            '<div class="htp-section">' +
-              '<div class="htp-title">&#128279; Join a Room</div>' +
-              '<div class="htp-text">Paste the link or room code from your other device:</div>' +
-              '<input type="text" class="sync-input" id="joinRoomInput" placeholder="Paste link or code here...">' +
-              '<button class="btn btn-purple" onclick="joinCloudRoom()">Join Room</button>' +
-            '</div>' +
-          '</div>';
+        scoresData = input;
       }
-    }
 
-    function createCloudRoom() {
-      var btn = document.getElementById("createRoomBtn");
-      btn.textContent = "Creating...";
-      btn.disabled = true;
-
-      fetch("/.netlify/functions/sync", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify([])
-      }).then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.id) {
-          cloudRoomId = data.id;
-          localStorage.setItem("mathCloudRoom", cloudRoomId);
-          syncToCloud();
-          updateSyncStatus();
-          renderSyncScreen();
-        } else {
-          alert("Could not create cloud room. Try again!");
-          btn.textContent = "Create Room";
-          btn.disabled = false;
-        }
-      }).catch(function(e) {
-        alert("Error connecting to cloud. Try again!");
-        btn.textContent = "Create Room";
-        btn.disabled = false;
-      });
-    }
-
-    function joinCloudRoom() {
-      var input = document.getElementById("joinRoomInput").value.trim();
-      if (input.indexOf("?room=") !== -1) {
-        input = input.split("?room=")[1].split("&")[0];
+      if (!scoresData) {
+        resultDiv.innerHTML = '<p style="color:#f38ba8;margin-top:10px;">Paste a share link first!</p>';
+        return;
       }
-      if (!input) { alert("Paste a link or room code first!"); return; }
 
-      fetch("/.netlify/functions/sync?id=" + input)
-      .then(function(r) {
-        if (r.ok) {
-          cloudRoomId = input;
-          localStorage.setItem("mathCloudRoom", cloudRoomId);
-          syncFromCloud(function() {
-            updateSyncStatus();
-            renderSyncScreen();
-          });
-        } else {
-          alert("Room not found! Check the code and try again.");
+      try {
+        var jsonStr = decodeURIComponent(escape(atob(scoresData)));
+        var importedLb = JSON.parse(jsonStr);
+
+        if (!Array.isArray(importedLb) || importedLb.length === 0) {
+          resultDiv.innerHTML = '<p style="color:#f38ba8;margin-top:10px;">No scores found in that link!</p>';
+          return;
         }
-      }).catch(function(e) {
-        alert("Error connecting. Try again!");
-      });
-    }
 
-    function disconnectCloud() {
-      cloudRoomId = "";
-      localStorage.removeItem("mathCloudRoom");
-      updateSyncStatus();
-      renderSyncScreen();
+        // Merge with local leaderboard
+        var localLb = getLeaderboard();
+        var merged = mergeLeaderboards(localLb, importedLb);
+        localStorage.setItem("mathGameLeaderboard", JSON.stringify(merged));
+
+        var added = merged.length - localLb.length;
+        resultDiv.innerHTML =
+          '<p style="color:#a6e3a1;font-size:20px;margin-top:10px;">&#9989; Scores imported!</p>' +
+          '<p style="color:#cdd6f4;">' + importedLb.length + ' scores received, ' + (added > 0 ? added + ' new added!' : 'all were already here!') + '</p>';
+
+        soundCorrect();
+      } catch(e) {
+        resultDiv.innerHTML = '<p style="color:#f38ba8;margin-top:10px;">Invalid link! Make sure you copied the full link.</p>';
+      }
     }
 
     function copyShareUrl() {
@@ -1263,44 +1249,6 @@
       }
     }
 
-    function syncToCloud() {
-      if (!cloudRoomId || isSyncing) return;
-      isSyncing = true;
-      var localData = getLeaderboard();
-
-      fetch("/.netlify/functions/sync?id=" + cloudRoomId)
-      .then(function(r) { return r.json(); })
-      .then(function(cloudData) {
-        if (!Array.isArray(cloudData)) cloudData = [];
-        var merged = mergeLeaderboards(localData, cloudData);
-        localStorage.setItem("mathGameLeaderboard", JSON.stringify(merged));
-        return fetch("/.netlify/functions/sync?id=" + cloudRoomId, {
-          method: "PUT",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(merged)
-        });
-      }).then(function() {
-        isSyncing = false;
-      }).catch(function(e) {
-        isSyncing = false;
-      });
-    }
-
-    function syncFromCloud(callback) {
-      if (!cloudRoomId) { if (callback) callback(); return; }
-      fetch("/.netlify/functions/sync?id=" + cloudRoomId)
-      .then(function(r) { return r.json(); })
-      .then(function(cloudData) {
-        if (!Array.isArray(cloudData)) cloudData = [];
-        var localData = getLeaderboard();
-        var merged = mergeLeaderboards(localData, cloudData);
-        localStorage.setItem("mathGameLeaderboard", JSON.stringify(merged));
-        if (callback) callback();
-      }).catch(function(e) {
-        if (callback) callback();
-      });
-    }
-
     function mergeLeaderboards(local, cloud) {
       var all = local.concat(cloud);
       var seen = {};
@@ -1324,17 +1272,6 @@
       return unique;
     }
 
-    function updateSyncStatus() {
-      var el = document.getElementById("syncStatus");
-      if (cloudRoomId) {
-        el.innerHTML = "&#9729; Cloud Synced &#9989;";
-        el.className = "sync-status sync-connected";
-      } else {
-        el.innerHTML = "&#9729; Not Synced";
-        el.className = "sync-status sync-not";
-      }
-    }
-
     // =====================
     // NAVIGATION
     // =====================
@@ -1352,17 +1289,24 @@
     // Make sure start screen shows when page loads
     window.onload = function() {
       showScreen("startScreen");
-      updateSyncStatus();
 
-      // Check for ?room= URL parameter (for joining from shared link)
+      // Check for ?scores= URL parameter (auto-import from shared link)
       var params = new URLSearchParams(window.location.search);
-      var roomParam = params.get("room");
-      if (roomParam && roomParam !== cloudRoomId) {
-        cloudRoomId = roomParam;
-        localStorage.setItem("mathCloudRoom", cloudRoomId);
-        syncFromCloud(function() {
-          updateSyncStatus();
-        });
+      var scoresParam = params.get("scores");
+      if (scoresParam) {
+        try {
+          var jsonStr = decodeURIComponent(escape(atob(scoresParam)));
+          var importedLb = JSON.parse(jsonStr);
+          if (Array.isArray(importedLb) && importedLb.length > 0) {
+            var localLb = getLeaderboard();
+            var merged = mergeLeaderboards(localLb, importedLb);
+            localStorage.setItem("mathGameLeaderboard", JSON.stringify(merged));
+            var added = merged.length - localLb.length;
+            alert("Scores imported! " + importedLb.length + " scores received" + (added > 0 ? ", " + added + " new added!" : "!"));
+          }
+        } catch(e) {}
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
       }
     };
   </script>
