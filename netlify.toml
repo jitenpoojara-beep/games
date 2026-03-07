@@ -1,0 +1,6 @@
+[build]
+  publish = "learn-js"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
