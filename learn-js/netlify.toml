@@ -1,5 +1,5 @@
 [build]
-  publish = "learn-js"
+  publish = "."
 
 [functions]
   directory = "netlify/functions"
