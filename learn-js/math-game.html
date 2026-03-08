@@ -847,7 +847,7 @@
         if (streak > bestStreak) bestStreak = streak;
 
         var points = 10;
-        if (streak >= 5) { points = 30; showBonus("+30 SUPER!"); soundStreak(); }
+        if (streak >= 5) { points = 30; timeLeft += 7; showBonus("+30 SUPER! +7s!"); soundStreak(); }
         else if (streak >= 3) { points = 20; showBonus("+20 STREAK!"); soundStreak(); }
         else { soundCorrect(); }
 
