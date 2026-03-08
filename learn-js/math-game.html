@@ -443,6 +443,7 @@
 
     <br>
     <button class="btn btn-blue" onclick="goToStart()">&#11013; Back</button>
+    <button class="btn btn-pink btn-small" onclick="clearAllScores()">&#128465; Clear All Scores</button>
   </div>
 
   <script>
@@ -1037,6 +1038,18 @@
       showScreen("leaderboardScreen");
       syncFromCloud();
       renderLeaderboard();
+    }
+
+    function clearAllScores() {
+      if (!confirm("Are you sure? This will delete ALL scores on ALL devices!")) return;
+      localStorage.setItem("mathGameLeaderboard", JSON.stringify([]));
+      fetch("/.netlify/functions/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leaderboard: [] })
+      }).catch(function(){});
+      renderLeaderboard();
+      soundClick();
     }
 
     function renderLeaderboard() {
