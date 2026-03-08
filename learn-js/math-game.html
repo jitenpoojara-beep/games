@@ -132,6 +132,19 @@
     }
     .answer-input:focus { outline: none; border-color: #f9e64f; }
 
+    .numpad {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      max-width: 280px; margin: 12px auto;
+    }
+    .num-btn {
+      padding: 14px; font-size: 24px; font-weight: bold; border: none; border-radius: 12px;
+      background-color: #45475a; color: #fff; cursor: pointer; transition: all 0.15s;
+    }
+    .num-btn:hover { background-color: #585b70; transform: scale(1.05); }
+    .num-btn:active { background-color: #89dceb; color: #1e1e2e; transform: scale(0.95); }
+    .num-del { background-color: #f38ba8; color: #1e1e2e; }
+    .num-del:hover { background-color: #f5a3b8; }
+
     .feedback { font-size: 24px; font-weight: bold; margin: 12px 0; min-height: 30px; }
 
     .streak-bar { margin: 10px auto; max-width: 300px; }
@@ -385,11 +398,26 @@
       <div class="question" id="questionDisplay">? + ? = ?</div>
       <div class="hint-text" id="hintText"></div>
 
-      <input type="text" class="answer-input" id="answerInput" placeholder="?">
+      <input type="text" class="answer-input" id="answerInput" placeholder="?" readonly>
 
       <div>
         <button class="btn btn-green" onclick="checkAnswer()">Check! &#10004;</button>
         <button class="btn btn-blue btn-small" onclick="skipQuestion()">Skip &#9193;</button>
+      </div>
+
+      <div class="numpad">
+        <button class="num-btn" onclick="tapNum('1')">1</button>
+        <button class="num-btn" onclick="tapNum('2')">2</button>
+        <button class="num-btn" onclick="tapNum('3')">3</button>
+        <button class="num-btn" onclick="tapNum('4')">4</button>
+        <button class="num-btn" onclick="tapNum('5')">5</button>
+        <button class="num-btn" onclick="tapNum('6')">6</button>
+        <button class="num-btn" onclick="tapNum('7')">7</button>
+        <button class="num-btn" onclick="tapNum('8')">8</button>
+        <button class="num-btn" onclick="tapNum('9')">9</button>
+        <button class="num-btn" onclick="tapNum('.')">.</button>
+        <button class="num-btn" onclick="tapNum('0')">0</button>
+        <button class="num-btn num-del" onclick="tapDel()">&#9003;</button>
       </div>
 
       <div class="feedback" id="feedback"></div>
@@ -1234,6 +1262,20 @@
       });
       if (unique.length > 50) unique = unique.slice(0, 50);
       return unique;
+    }
+
+    // =====================
+    // NUMBER PAD
+    // =====================
+    function tapNum(n) {
+      var inp = document.getElementById("answerInput");
+      inp.value += n;
+      soundClick();
+    }
+    function tapDel() {
+      var inp = document.getElementById("answerInput");
+      inp.value = inp.value.slice(0, -1);
+      soundClick();
     }
 
     // =====================
