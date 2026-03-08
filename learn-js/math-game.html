@@ -1106,7 +1106,7 @@
       localStorage.removeItem("clearAttempts");
       localStorage.removeItem("clearLockUntil");
       localStorage.setItem("mathGameLeaderboard", JSON.stringify([]));
-      fetch("/.netlify/functions/sync", {
+      fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leaderboard: [] })
@@ -1188,7 +1188,7 @@
       isSyncing = true;
       updateSyncStatus("syncing");
 
-      fetch("/.netlify/functions/sync")
+      fetch("/api/sync")
         .then(function(res) { return res.json(); })
         .then(function(cloudScores) {
           if (Array.isArray(cloudScores) && cloudScores.length > 0) {
@@ -1209,7 +1209,7 @@
       var lb = getLeaderboard();
       if (lb.length === 0) return;
 
-      fetch("/.netlify/functions/sync", {
+      fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leaderboard: lb })

@@ -1,6 +1,6 @@
 [build]
   publish = "."
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
+[[edge_functions]]
+  function = "sync"
+  path = "/api/sync"
