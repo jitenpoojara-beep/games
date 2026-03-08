@@ -1041,8 +1041,40 @@
     }
 
     function clearAllScores() {
-      var code = prompt("Enter password to erase all scores:");
-      if (!code || code.toLowerCase() !== "riyansh") { if (code) alert("Wrong password!"); return; }
+      // Check if locked out
+      var lockUntil = localStorage.getItem("clearLockUntil");
+      if (lockUntil && Date.now() < Number(lockUntil)) {
+        var hoursLeft = Math.ceil((Number(lockUntil) - Date.now()) / 3600000);
+        alert("Too many wrong attempts! Locked for " + hoursLeft + " more hour" + (hoursLeft === 1 ? "" : "s") + ".");
+        return;
+      }
+      // Reset attempts if lock expired
+      if (lockUntil && Date.now() >= Number(lockUntil)) {
+        localStorage.removeItem("clearAttempts");
+        localStorage.removeItem("clearLockUntil");
+      }
+
+      var attempts = Number(localStorage.getItem("clearAttempts") || 0);
+      var attemptsLeft = 5 - attempts;
+
+      var code = prompt("Enter password to erase all scores (" + attemptsLeft + " attempt" + (attemptsLeft === 1 ? "" : "s") + " left):");
+      if (!code) return;
+
+      if (code.toLowerCase() !== "riyansh") {
+        attempts++;
+        localStorage.setItem("clearAttempts", attempts);
+        if (attempts >= 5) {
+          localStorage.setItem("clearLockUntil", Date.now() + 86400000);
+          alert("Wrong password! Locked for 24 hours.");
+        } else {
+          alert("Wrong password! " + (5 - attempts) + " attempt" + (5 - attempts === 1 ? "" : "s") + " left.");
+        }
+        return;
+      }
+
+      // Correct password - reset attempts and clear scores
+      localStorage.removeItem("clearAttempts");
+      localStorage.removeItem("clearLockUntil");
       localStorage.setItem("mathGameLeaderboard", JSON.stringify([]));
       fetch("/.netlify/functions/sync", {
         method: "POST",
