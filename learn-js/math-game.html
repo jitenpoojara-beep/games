@@ -1041,7 +1041,8 @@
     }
 
     function clearAllScores() {
-      if (!confirm("Are you sure? This will delete ALL scores on ALL devices!")) return;
+      var code = prompt("Type DELETE to erase all scores on all devices:");
+      if (!code || code.toUpperCase() !== "DELETE") return;
       localStorage.setItem("mathGameLeaderboard", JSON.stringify([]));
       fetch("/.netlify/functions/sync", {
         method: "POST",
