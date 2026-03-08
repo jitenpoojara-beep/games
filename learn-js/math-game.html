@@ -1252,6 +1252,11 @@
     window.onload = function() {
       showScreen("startScreen");
       syncFromCloud();
+
+      // Register service worker for offline play
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(function(){});
+      }
     };
   </script>
 
