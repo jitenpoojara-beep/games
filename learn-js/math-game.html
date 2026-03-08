@@ -1041,8 +1041,8 @@
     }
 
     function clearAllScores() {
-      var code = prompt("Type DELETE to erase all scores on all devices:");
-      if (!code || code.toUpperCase() !== "DELETE") return;
+      var code = prompt("Enter password to erase all scores:");
+      if (!code || code.toLowerCase() !== "riyansh") { if (code) alert("Wrong password!"); return; }
       localStorage.setItem("mathGameLeaderboard", JSON.stringify([]));
       fetch("/.netlify/functions/sync", {
         method: "POST",
