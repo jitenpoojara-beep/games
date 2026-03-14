@@ -97,7 +97,7 @@ function subL(){const n=document.getElementById('uIn').value.trim(),p=document.g
 document.getElementById('uIn').onkeydown=e=>{if(e.key==='Enter')document.getElementById('pIn').focus()};
 document.getElementById('pIn').onkeydown=e=>{if(e.key==='Enter')subL()};
 function uMe(){document.getElementById('mU').textContent='Player: '+G.un;document.getElementById('mX').textContent='XP: '+SV.xp;document.getElementById('mC').textContent=(CH.find(c=>c.id===SV.sl)||CH[0]).n;const curEv=pickEvent();if(curEv.m>1){document.getElementById('mC').textContent+=' | '+curEv.n}}
-function tryA(){document.getElementById('aP').value==='RIYANSH'?{ss('admS');populateEvSel();rBanL()}:alert('Wrong password!')}
+function tryA(){document.getElementById('aP').value==='RIYANSH'?(ss('admS'),populateEvSel(),rBanL()):alert('Wrong password!')}
 function aW(){Object.keys(WP).forEach(function(w){if(!SV.ow.includes(w))SV.ow.push(w);gi(w)});svS();addM('ADMIN: All weapons!')}
 function aXP(){SV.xp+=1000;svS();addM('ADMIN: +1000 XP!');uMe()}
 function aU(){CH.forEach(c=>{if(!SV.ch.includes(c.id))SV.ch.push(c.id)});svS();addM('ADMIN: All unlocked!')}
