@@ -384,7 +384,7 @@ function acChk(){if(!G.on)return;const n=Date.now();const dt=n-_acLp;_acLp=n;if(
 /*71-Timer acceleration detect*/let _acTimerA=Date.now(),_acTimerB=0;function acTimerChk(){const n=Date.now();const real=n-_acTimerA;_acTimerA=n;_acTimerB++;if(_acTimerB>10&&real<400){addM('\u26a0 AC: Timer acceleration')}}
 /*72-Memory/object count*/function acMemChk(){if(!G.on)return;if(G.mo.length>200){G.mo.splice(100);addM('\u26a0 AC: Mob overflow')}}
 /*73-Loot table integrity*/function acLootChk(){if(!G.lt)return;if(G.lt.length>50)G.lt.splice(0,G.lt.length-30)}
-/*74-Render distance hack*/function acRdChk(){if(G.ca&&G.ca.far>200){G.ca.far=120;G.ca.updateProjectionMatrix()}}
+/*74-Render distance hack*/function acRdChk(){if(G.ca&&G.ca.far>200){G.ca.far=160;G.ca.updateProjectionMatrix()}}
 /*75-FOV hack*/function acFovChk(){if(G.ca&&(G.ca.fov<20||G.ca.fov>120)){G.ca.fov=75;G.ca.updateProjectionMatrix();addM('\u26a0 AC: FOV reset')}}
 /*76-Ambient light tamper*/function acLightChk(){if(!G.on||!G.sc)return;G.sc.children.forEach(function(c){if(c.isAmbientLight&&c.intensity>3)c.intensity=1})}
 /*77-Team score tamper*/function acTeamChk(){if(!G.on)return;if(G.ws.r<0)G.ws.r=0;if(G.ws.b<0)G.ws.b=0;if(G.ws.r>100)G.ws.r=100;if(G.ws.b>100)G.ws.b=100}
@@ -427,11 +427,14 @@ else if(_hr>=19.5||_hr<6){_dayF=.15}/*night*/
 else{_dayF=1}
 if(G._sun&&G.pl&&G.pl.p){
 const sunAng=(_hr/24)*Math.PI*2-Math.PI/2;
-const sunH=Math.sin(sunAng)*80+20;
-const sunD=Math.cos(sunAng)*60;
-G._sun.position.set(G.pl.p.x+sunD,Math.max(sunH,5),G.pl.p.z+40);
+const sunH=Math.sin(sunAng)*30+15;
+const sunD=Math.cos(sunAng)*25;
+G._sun.position.set(G.pl.p.x+sunD,Math.max(sunH,8),G.pl.p.z+20);
 G._sun.visible=_dayF>.2;
 if(_dayF>.2){G._sun.children[0].material.opacity=.15+_dayF*.15}
+if(_dayF<.3){G._sun.material.color.set(0xccccff);G._sun.scale.setScalar(.5)}
+else if(_dayF<.5){G._sun.material.color.set(0xffaa44);G._sun.scale.setScalar(1.2)}
+else{G._sun.material.color.set(0xffee88);G._sun.scale.setScalar(1)}
 }
 /*Adjust lighting*/
 G.sc.children.forEach(function(c){
