@@ -116,9 +116,27 @@ const SEASONS=[
 {id:'christmas',n:'🎄 Christmas',sky:0x0a1530,fog:0x0a1530,amb:0x445588,sun:0xaaccff,grass:'#e8e8f0',grassT:'#f8f8ff',grassS:'#c8c8d8',leaf:'#cc2222',snowChance:1,xmas:true},
 {id:'birthday',n:'🎂 Birthday!',sky:0x4488ee,fog:0x4488ee,amb:0xaabbcc,sun:0xffffff,grass:'#ff88cc',grassT:'#ffaadd',grassS:'#cc66aa',leaf:'#ff44aa',snowChance:0,birthday:true}
 ];
-let _curSeason=0;
-function getSeason(){const d=new Date();const m=d.getMonth();const day=d.getDate();/*Birthday Oct 9*/if(m===9&&day===9)return 7;/*Christmas Dec 15-31*/if(m===11&&day>=15)return 6;/*Halloween Oct 20 - Nov 3*/if(m===9&&day>=20)return 4;if(m===10&&day<=3)return 4;/*Winter Dec 1-14, Jan, Feb*/if(m===11||m===0||m===1)return 5;/*Spring Mar-May*/if(m>=2&&m<=4)return 0;/*Summer Jun-Aug*/if(m>=5&&m<=7)return 1;/*Autumn Sep-Nov*/if(m>=8&&m<=10)return 2;return 0}
-function getSeasonData(){return SEASONS[getSeason()]}
+let _curSeason=0,_geoLat=null,_geoZone='temperate';
+(function(){try{navigator.geolocation.getCurrentPosition(function(p){_geoLat=p.coords.latitude;const aLat=Math.abs(_geoLat);if(aLat<15)_geoZone='tropical';else if(aLat<30)_geoZone='subtropical';else if(aLat<50)_geoZone='temperate';else _geoZone='cold'},function(){},{timeout:5000})}catch(e){}})();
+function _isSouth(){return _geoLat!==null&&_geoLat<0}
+function getSeason(){const d=new Date();let m=d.getMonth(),day=d.getDate();/*Birthday Oct 9*/if(m===9&&day===9)return 7;/*Christmas Dec 15-31*/if(m===11&&day>=15)return 6;/*Halloween Oct 20 - Nov 3*/if(m===9&&day>=20)return 4;if(m===10&&day<=3)return 4;/*Flip for southern hemisphere*/if(_isSouth())m=(m+6)%12;/*Winter Dec-Feb*/if(m===11||m===0||m===1)return 5;/*Spring Mar-May*/if(m>=2&&m<=4)return 0;/*Summer Jun-Aug*/if(m>=5&&m<=7)return 1;/*Autumn Sep-Nov*/if(m>=8&&m<=10)return 2;return 0}
+function getSeasonData(){const base=SEASONS[getSeason()];const si=getSeason();if(si>=4)return base;/*Special seasons unchanged*/
+const s=Object.assign({},base);
+if(_geoZone==='tropical'){/*Tropics: always warm, no snow, green year-round, rainy/dry instead*/
+s.snowChance=0;if(si===5){s.n='🌧️ Rainy Season';s.grass='#2a8828';s.grassT='#38b838';s.grassS='#4a6a2a';s.leaf='#22aa22';s.sky=0x6699aa;s.fog=0x6699aa;s.amb=0x889988;s.sun=0xddeedd}
+if(si===1){s.n='☀️ Dry Season';s.grass='#8a9030';s.grassT='#a0a838';s.grassS='#6a5a28';s.leaf='#66aa22';s.sky=0x4499cc;s.fog=0x4499cc}
+if(si===0||si===2){s.grass='#30a030';s.grassT='#48c040';s.grassS='#5a6a2a';s.leaf='#28aa28'}}
+else if(_geoZone==='subtropical'){/*Subtropical: mild winter, no snow except rare, hot summer*/
+if(si===5){s.snowChance=0;s.n='🌤️ Mild Winter';s.grass='#6a8a40';s.grassT='#80a050';s.grassS='#5a5a30';s.leaf='#889944';s.sky=0x99bbcc;s.fog=0x99bbcc;s.amb=0x8899aa;s.sun=0xffeedd}
+if(si===1){s.n='🔥 Hot Summer';s.sky=0x3388cc;s.fog=0x3388cc;s.sun=0xffffaa}}
+else if(_geoZone==='cold'){/*Cold: long harsh winter, cool summer, snow in autumn too*/
+if(si===5){s.n='🥶 Harsh Winter';s.sky=0xaabbcc;s.fog=0xaabbcc;s.amb=0x6677aa;s.sun=0xccddff}
+if(si===2){s.snowChance=.5;s.n='🍂 Cold Autumn';s.grass='#7a6a28';s.grassT='#8a7a30';s.grassS='#5a4a20'}
+if(si===1){s.n='🌥️ Cool Summer';s.sky=0x77aacc;s.fog=0x77aacc;s.grass='#389030';s.grassT='#48a838';s.leaf='#28aa30'}
+if(si===0){s.snowChance=.3;s.n='🌱 Late Spring'}}
+/*Southern hemisphere label*/
+if(_isSouth()&&si<4){const flip={0:'🌸 Spring (S)',1:'☀️ Summer (S)',2:'🍂 Autumn (S)',5:'❄️ Winter (S)'};if(flip[si])s.n=flip[si]}
+return s}
 function getSpecialDay(){const d=new Date(),m=d.getMonth(),day=d.getDate();if(m===9&&day===9)return{n:'🎂 Birthday!',hp:400,dmg:1,spd:1};if(m===2&&day===11)return{n:'⚔️ Power Day!',hp:0,dmg:2,spd:1};if(m===5&&day===3)return{n:'💨 Speed Day!',hp:0,dmg:1,spd:2};return null}
 const BC={1:'#3cb030',2:'#8b6b42',3:'#909090',4:'#c08040',5:'#1a7a3a',6:'#e8c040',7:'#2299ff',8:'#f0f0f0',9:'#c05050',10:'#252025',11:'#ffb800'};
 const BC_TOP={1:'#50d040',2:'#7a5a35',3:'#a8a8a8',4:'#b87838',5:'#28a858',6:'#f0d060',7:'#3399ff',8:'#f0f4f8',9:'#d06060',10:'#2a1830',11:'#ffc830'};
