@@ -415,7 +415,38 @@ function sInd(t,c){const e=document.getElementById('syncInd');if(e){e.innerHTML=
 function uSeason(){const ns=getSeason();if(ns===_curSeason)return;_curSeason=ns;const s=SEASONS[ns];if(!G.sc)return;G.sc.background.setHex(s.sky);G.sc.fog.color.setHex(s.fog);if(ns===4)G.sc.fog.density=.035;else if(ns===6)G.sc.fog.density=.025;else G.sc.fog.density=isMob?.018:.012;G.sc.children.forEach(function(c){if(c.isAmbientLight)c.color.setHex(s.amb);if(c.isDirectionalLight)c.color.setHex(s.sun);if(c.isHemisphereLight){c.color.setHex(s.sky);c.groundColor.setHex(ns===3?0x445566:0x445522)}});addM('Season changed: '+s.n);const px=G.pl.p.x/CS|0,pz=G.pl.p.z/CS|0;for(let dx=-RD;dx<=RD;dx++)for(let dz=-RD;dz<=RD;dz++){if(dx*dx+dz*dz>RD*RD)continue;const cx2=px+dx,cz2=pz+dz;if(cx2<0||cz2<0)continue;bCk(cx2,cz2)}}
 let _snowParts=null,_hwParts=null,_rainParts=null,_isRaining=false,_rainTimer=0;
 function uWeather(){const s=getSeasonData();
-/*Sun follow player*/if(G._sun&&G.pl&&G.pl.p){G._sun.position.set(G.pl.p.x+60,100,G.pl.p.z+40);const sc=new THREE.Color(s.sun);G._sun.material.color.copy(sc);const isNight=s.id==='halloween'||s.id==='christmas';if(isNight){G._sun.material.color.set(0xccccff);G._sun.children[0].material.opacity=.1}else{G._sun.children[0].material.opacity=.25}}
+/*Day/night cycle based on real local time*/
+const _hr=new Date().getHours()+new Date().getMinutes()/60;
+const _isSpecialNight=s.id==='halloween'||s.id==='christmas';
+let _dayF;/*0=midnight,1=noon*/
+if(_isSpecialNight){_dayF=.1}
+else if(_hr>=6&&_hr<8){_dayF=(_hr-6)/2*.7+.3}/*sunrise*/
+else if(_hr>=8&&_hr<17){_dayF=1}/*day*/
+else if(_hr>=17&&_hr<19.5){_dayF=1-(_hr-17)/2.5*.7}/*sunset*/
+else if(_hr>=19.5||_hr<6){_dayF=.15}/*night*/
+else{_dayF=1}
+if(G._sun&&G.pl&&G.pl.p){
+const sunAng=(_hr/24)*Math.PI*2-Math.PI/2;
+const sunH=Math.sin(sunAng)*80+20;
+const sunD=Math.cos(sunAng)*60;
+G._sun.position.set(G.pl.p.x+sunD,Math.max(sunH,5),G.pl.p.z+40);
+G._sun.visible=_dayF>.2;
+if(_dayF>.2){G._sun.children[0].material.opacity=.15+_dayF*.15}
+}
+/*Adjust lighting*/
+G.sc.children.forEach(function(c){
+if(c.isAmbientLight){const bc=new THREE.Color(s.amb);c.color.set(bc.multiplyScalar(.3+_dayF*.7));c.intensity=.3+_dayF*.4}
+if(c.isDirectionalLight){c.intensity=.2+_dayF*1.0;if(_dayF<.3){c.color.set(0x4466aa)}else if(_dayF<.5){c.color.set(0xffaa66)}else{c.color.setHex(s.sun)}}
+if(c.isHemisphereLight){c.intensity=.2+_dayF*.45}
+});
+/*Sky color blend*/
+if(!_isSpecialNight){
+const dayC=new THREE.Color(s.sky);const nightC=new THREE.Color(0x050510);
+const skyC=nightC.clone().lerp(dayC,_dayF);
+G.sc.background.copy(skyC);G.sc.fog.color.copy(skyC)
+}
+/*Fog density at night*/
+if(!_isSpecialNight){G.sc.fog.density=_dayF>.5?(isMob?.018:.012):(isMob?.025:.018)}
 /*Rain system - based on real location + season*/if(Date.now()>_rainTimer){let rc=.1;const si=getSeason(),mo=new Date().getMonth();
 if(_geoZone==='tropical'){/*Tropics: heavy monsoon Jun-Sep, dry Dec-Mar*/if(mo>=5&&mo<=8)rc=.7;else if(mo>=11||mo<=2)rc=.1;else rc=.4}
 else if(_geoZone==='subtropical'){/*Subtropical: summer storms, dry winter*/if(mo>=5&&mo<=8)rc=.35;else if(mo>=11||mo<=1)rc=.1;else rc=.2}
