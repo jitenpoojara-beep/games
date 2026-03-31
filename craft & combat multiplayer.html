@@ -411,12 +411,12 @@ function svS(){if(G.un){if(!SV.ud)SV.ud={};SV.ud[G.un]={xp:SV.xp,ch:SV.ch,sl:SV.
 let _acXpT=0,_acXpR=0,_acFr=0,_acLp=Date.now(),_acSp=0,_acKl=0,_acKlT=0,_acDmgC=0,_acDmgT=0,_acTpC=0,_acPosH=[],_acInvC=0;
 function acChk(){if(!G.on)return;const n=Date.now();const dt=n-_acLp;_acLp=n;if(dt>0&&dt<5000){_acFr++;
 /*1-XP rate*/const xpd=SV.xp-_acXpT;if(xpd>500&&dt<2000){_acXpR++;if(_acXpR>5){addM('\u26a0 AC: XP rate anomaly');SV.xp=_acXpT;svS();_acXpR=0}}_acXpT=SV.xp;
-/*2-Speed hack*/if(G.pl&&G.pl.v){const spd=Math.sqrt(G.pl.v.x*G.pl.v.x+G.pl.v.z*G.pl.v.z);if(spd>25){_acSp++;if(_acSp>30){addM('\u26a0 AC: Speed hack');G.pl.v.set(0,G.pl.v.y,0);_acSp=0}}else _acSp=Math.max(0,_acSp-1)}
+/*2-Speed hack*/if(G.pl&&G.pl.v){const _ac2=CH.find(c=>c.id===G.pl.cr)||CH[0];const _acSM=(_ac2.b==='sp'||_ac2.b==='al'||_ac2.b==='tp')?_ac2.v:1;const _acEfS=G.pl.ef&&G.pl.ef.speed&&G.pl.ef.speed.u>n?G.pl.ef.speed.m:1;const _acMaxSpd=SPD*_acSM*_acEfS*1.5;const spd=Math.sqrt(G.pl.v.x*G.pl.v.x+G.pl.v.z*G.pl.v.z);if(spd>_acMaxSpd&&spd>25){_acSp++;if(_acSp>30){addM('\u26a0 AC: Speed hack');G.pl.v.set(0,G.pl.v.y,0);_acSp=0}}else _acSp=Math.max(0,_acSp-1)}
 /*3-HP overflow*/if(G.pl&&G.pl.hp>G.pl.mh)G.pl.hp=G.pl.mh;
 /*4-Negative XP*/if(SV.xp<0){SV.xp=0;svS()}
 /*5-NaN XP*/if(typeof SV.xp!=='number'||isNaN(SV.xp)||!isFinite(SV.xp)){SV.xp=_acXpT||0;svS()}
 /*6-Kill rate*/const klD=G.pl.kl-_acKl;if(klD>10&&n-_acKlT<3000){addM('\u26a0 AC: Kill rate anomaly');G.pl.kl=_acKl}_acKl=G.pl.kl;_acKlT=n;
-/*7-Teleport detect*/if(G.pl&&G.pl.p){_acPosH.push({x:G.pl.p.x,z:G.pl.p.z,t:n});if(_acPosH.length>2){const prev=_acPosH[_acPosH.length-2];const dist=Math.sqrt((G.pl.p.x-prev.x)**2+(G.pl.p.z-prev.z)**2);const pdt=(n-prev.t)/1000;if(pdt>0&&dist/pdt>40){_acTpC++;if(_acTpC>3){addM('\u26a0 AC: Teleport detected');G.pl.p.set(prev.x,G.pl.p.y,prev.z);_acTpC=0}}else _acTpC=Math.max(0,_acTpC-1)}if(_acPosH.length>10)_acPosH.splice(0,_acPosH.length-10)}
+/*7-Teleport detect*/if(G.pl&&G.pl.p){_acPosH.push({x:G.pl.p.x,z:G.pl.p.z,t:n});if(_acPosH.length>2){const prev=_acPosH[_acPosH.length-2];const dist=Math.sqrt((G.pl.p.x-prev.x)**2+(G.pl.p.z-prev.z)**2);const pdt=(n-prev.t)/1000;const _acTpMax=Math.max(40,_acMaxSpd||40);if(pdt>0&&dist/pdt>_acTpMax){_acTpC++;if(_acTpC>3){addM('\u26a0 AC: Teleport detected');G.pl.p.set(prev.x,G.pl.p.y,prev.z);_acTpC=0}}else _acTpC=Math.max(0,_acTpC-1)}if(_acPosH.length>10)_acPosH.splice(0,_acPosH.length-10)}
 /*8-Damage rate*/
 /*9-Invincibility abuse*/if(G.pl&&G.pl.iv>n+15000){G.pl.iv=n+8000;addM('\u26a0 AC: Invincibility capped')}
 /*10-Effect duration*/if(G.pl&&G.pl.ef){Object.keys(G.pl.ef).forEach(k=>{if(G.pl.ef[k].u>n+120000){G.pl.ef[k].u=n+30000;addM('\u26a0 AC: Effect capped')}})}
