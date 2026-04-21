@@ -1,0 +1,3553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Goalkeeper26</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #1a1a2e; font-family: Arial, sans-serif; }
+        canvas { display: block; }
+
+        /* HUD Overlay */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+        #score {
+            position: absolute; top: 15px; left: 20px;
+            color: #e0e0e0; font-size: 28px; font-weight: bold;
+        }
+        #playerName {
+            position: absolute; top: 50px; left: 20px;
+            color: #ffcc02; font-size: 18px; font-weight: bold;
+        }
+        #usernameInput {
+            padding: 12px 20px; font-size: 20px;
+            color: #fff; background: rgba(255, 255, 255, 0.12);
+            border: 2px solid #3a7bd5; border-radius: 10px;
+            margin-bottom: 20px; outline: none; text-align: center;
+            pointer-events: auto; width: 260px;
+        }
+        #usernameInput:focus { border-color: #5c9eff; background: rgba(255, 255, 255, 0.18); }
+        #usernameInput::placeholder { color: #888; }
+        .btn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+        .btn:disabled:hover { background: #555; }
+        #hearts {
+            position: absolute; top: 15px; right: 20px;
+            display: flex; gap: 8px; flex-direction: row-reverse;
+        }
+        #pauseBtn {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.45); color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 20px; cursor: pointer; pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0; line-height: 1;
+        }
+        #pauseBtn:hover { background: rgba(0, 0, 0, 0.65); }
+        #pauseBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .heart {
+            font-size: 30px; color: #ff4757;
+        }
+        .heart.lost {
+            color: #555;
+        }
+        #centerMessage {
+            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: #fff;
+        }
+        #centerMessage .countdown {
+            font-size: 56px; font-weight: bold; color: #ffcc02;
+        }
+        #centerMessage .subtitle {
+            font-size: 22px; color: #aaa; margin-bottom: 10px;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 20; pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        .screen > * { flex-shrink: 0; }
+        .screen::before, .screen::after {
+            content: ""; flex: 1 1 0; min-height: 20px;
+        }
+        .hidden { display: none !important; }
+        #homeScreen { background: rgba(26, 26, 46, 0.85); }
+        #loginScreen { background: rgba(26, 26, 46, 0.85); }
+        #gameOverScreen { background: rgba(26, 26, 46, 0.85); }
+        #pauseScreen { background: rgba(0, 0, 0, 0.5); }
+
+        .screen h1 {
+            color: #e0e0e0; font-size: 56px; margin-bottom: 15px; flex-shrink: 0;
+        }
+        .screen .highscore {
+            color: #aaa; font-size: 24px; margin-bottom: 20px; flex-shrink: 0;
+        }
+        .screen .btn, .screen .btn-small, .screen input { flex-shrink: 0; }
+        .screen .final-score {
+            color: #e0e0e0; font-size: 34px; margin-bottom: 10px;
+        }
+        .screen .final-highscore {
+            color: #ffcc02; font-size: 24px; margin-bottom: 30px;
+        }
+        #gameOverScreen h1 {
+            color: #ff4757;
+        }
+        #pauseScreen h1 {
+            color: #fff; font-size: 56px;
+        }
+        #pauseScreen p {
+            color: #aaa; font-size: 22px; margin-top: 15px;
+        }
+
+        .btn {
+            padding: 15px 50px; font-size: 24px; font-weight: bold;
+            color: #fff; background: #3a7bd5; border: none; border-radius: 12px;
+            cursor: pointer; pointer-events: auto;
+        }
+        .btn:hover { background: #5c9eff; }
+        .btn-small {
+            padding: 10px 30px; font-size: 18px; font-weight: bold;
+            color: #fff; background: #555; border: none; border-radius: 10px;
+            cursor: pointer; pointer-events: auto; margin-top: 15px;
+        }
+        .btn-small:hover { filter: brightness(1.15); }
+
+        /* Colorful home + game over buttons */
+        #friendsBtn { background: #27ae60; }
+        #challengesBtn { background: #e67e22; }
+        #howToPlayBtn, #howToPlayBtn2 { background: #16a085; }
+        #leaderboardBtn, #leaderboardBtn2 { background: #d4910b; }
+        #homeBtn { background: #2980b9; }
+        #signupBtn { background: #27ae60; }
+        #gotItBtn { background: #27ae60; }
+        #friendsCloseBtn, #leaderboardCloseBtn, #challengesCloseBtn { background: #2c3e50; }
+
+        #howToPlayScreen, #leaderboardScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 30; background: rgba(26, 26, 46, 0.92); pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        #howToPlayScreen > *, #leaderboardScreen > * { flex-shrink: 0; }
+        #howToPlayScreen::before, #howToPlayScreen::after,
+        #leaderboardScreen::before, #leaderboardScreen::after {
+            content: ""; flex: 1 1 0; min-height: 20px;
+        }
+        #howToPlayScreen.visible, #leaderboardScreen.visible { display: flex; }
+        #howToPlayScreen h2, #leaderboardScreen h2 { color: #e0e0e0; font-size: 36px; margin-bottom: 20px; }
+        #howToPlayScreen ul {
+            list-style: none; padding: 0; max-width: 420px; text-align: left;
+        }
+        #howToPlayScreen li {
+            color: #ccc; font-size: 18px; margin-bottom: 12px; line-height: 1.4;
+        }
+        #howToPlayScreen li span { color: #ffcc02; font-weight: bold; }
+
+        /* Leaderboard */
+        #leaderboardList {
+            list-style: none; padding: 0; width: 420px; max-width: 90%;
+            max-height: 50vh; overflow-y: auto;
+        }
+        #leaderboardList li {
+            display: flex; align-items: center; justify-content: space-between;
+            color: #e0e0e0; font-size: 20px; padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.06); border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        #leaderboardList li .rank { color: #aaa; width: 40px; font-weight: bold; }
+        #leaderboardList li .name { flex: 1; color: #fff; margin: 0 10px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #leaderboardList li .score { color: #ffcc02; font-weight: bold; }
+        #leaderboardList li.top1 { background: rgba(255, 204, 2, 0.18); }
+        #leaderboardList li.top1 .rank { color: #ffcc02; }
+        #leaderboardList li.top2 { background: rgba(200, 200, 200, 0.15); }
+        #leaderboardList li.top3 { background: rgba(205, 127, 50, 0.18); }
+        #leaderboardList li.you { outline: 2px solid #5c9eff; }
+        #leaderboardEmpty { color: #888; font-size: 18px; font-style: italic; }
+
+        /* Auth screen */
+        #loginScreen input {
+            padding: 12px 20px; font-size: 20px;
+            color: #fff; background: rgba(255, 255, 255, 0.12);
+            border: 2px solid #3a7bd5; border-radius: 10px;
+            margin-bottom: 12px; outline: none; text-align: center;
+            pointer-events: auto; width: 260px;
+        }
+        #loginScreen input:focus { border-color: #5c9eff; background: rgba(255, 255, 255, 0.18); }
+        #loginScreen input::placeholder { color: #888; }
+        .auth-error { color: #ff6b6b; font-size: 16px; margin-top: 12px; min-height: 20px; }
+        .auth-hint { color: #888; font-size: 14px; margin-bottom: 14px; max-width: 320px; text-align: center; }
+        #loggedInAs { color: #aaa; font-size: 18px; margin-bottom: 14px; }
+        #loggedInAs #currentUserLabel { color: #ffcc02; font-weight: bold; }
+
+        /* Friends screen */
+        #friendsScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 30; background: rgba(26, 26, 46, 0.92); pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        #friendsScreen > * { flex-shrink: 0; }
+        #friendsScreen::before, #friendsScreen::after {
+            content: ""; flex: 1 1 0; min-height: 20px;
+        }
+        #friendsScreen.visible { display: flex; }
+        #friendsScreen h2 { color: #e0e0e0; font-size: 36px; margin-bottom: 20px; }
+        .friends-section { width: 420px; max-width: 90%; margin-bottom: 20px; }
+        .friends-section h3 { color: #ffcc02; font-size: 18px; margin-bottom: 10px; }
+        .add-friend-row { display: flex; gap: 8px; }
+        .add-friend-row input {
+            flex: 1; padding: 10px 14px; font-size: 16px;
+            color: #fff; background: rgba(255, 255, 255, 0.12);
+            border: 2px solid #3a7bd5; border-radius: 8px; outline: none;
+        }
+        .add-friend-row input:focus { border-color: #5c9eff; }
+        .add-friend-row button { margin-top: 0; }
+        .friend-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px; margin-bottom: 6px; color: #fff; font-size: 16px;
+        }
+        .friend-row .friend-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .friend-row .friend-score { color: #ffcc02; font-weight: bold; }
+        .friend-row .friend-action {
+            padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px;
+            cursor: pointer; color: #fff; font-weight: bold;
+        }
+        .friend-row .accept { background: #27ae60; }
+        .friend-row .accept:hover { background: #2ecc71; }
+        .friend-row .decline { background: #c0392b; }
+        .friend-row .decline:hover { background: #e74c3c; }
+        .friend-row .remove { background: #555; }
+        .friend-row .remove:hover { background: #777; }
+        .friends-empty { color: #888; font-size: 15px; font-style: italic; }
+        .friends-msg { color: #5c9eff; font-size: 14px; margin-top: 6px; min-height: 18px; }
+        .friends-msg.error { color: #ff6b6b; }
+        .friend-row .challenge { background: #d4910b; }
+        .friend-row .challenge:hover { background: #f0a61e; }
+
+        /* Challenges screen */
+        #challengesScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 30; background: rgba(26, 26, 46, 0.92); pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        #challengesScreen > * { flex-shrink: 0; }
+        #challengesScreen::before, #challengesScreen::after {
+            content: ""; flex: 1 1 0; min-height: 20px;
+        }
+        #challengesScreen.visible { display: flex; }
+        #challengesScreen h2 { color: #e0e0e0; font-size: 36px; margin-bottom: 20px; }
+        .challenge-row {
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 12px 14px; background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px; margin-bottom: 8px; color: #fff;
+        }
+        .challenge-row .ch-header { display: flex; justify-content: space-between; align-items: center; }
+        .challenge-row .ch-from { color: #ffcc02; font-weight: bold; font-size: 16px; }
+        .challenge-row .ch-target { color: #ccc; font-size: 14px; }
+        .challenge-row .ch-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+        .challenge-row .ch-result {
+            font-size: 14px; padding: 6px 10px; border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .challenge-row .ch-result.win { color: #2ecc71; }
+        .challenge-row .ch-result.loss { color: #ff6b6b; }
+        .challenge-row .ch-result.pending { color: #aaa; font-style: italic; }
+        .ch-action-btn {
+            padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px;
+            cursor: pointer; color: #fff; font-weight: bold;
+        }
+        .ch-action-btn.play { background: #27ae60; }
+        .ch-action-btn.play:hover { background: #2ecc71; }
+        .ch-action-btn.dismiss { background: #555; }
+        .ch-action-btn.dismiss:hover { background: #777; }
+
+        /* Challenge badge on home */
+        #challengesBtn { position: relative; }
+        .ch-badge {
+            position: absolute; top: -6px; right: -6px;
+            background: #e74c3c; color: #fff;
+            font-size: 12px; font-weight: bold;
+            min-width: 20px; height: 20px; padding: 0 6px;
+            border-radius: 10px; display: none;
+            align-items: center; justify-content: center;
+            line-height: 1;
+        }
+        .ch-badge.visible { display: inline-flex; }
+
+        /* Challenge target indicator during gameplay */
+        #challengeTargetHUD {
+            position: absolute; top: 55px; left: 50%; transform: translateX(-50%);
+            color: #ffcc02; font-size: 16px; font-weight: bold;
+            background: rgba(0, 0, 0, 0.5); padding: 4px 12px; border-radius: 6px;
+            display: none; pointer-events: none;
+        }
+        #challengeTargetHUD.visible { display: block; }
+
+        /* H2H opponent score HUD */
+        #h2hOpponentHUD {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            color: #ff6b6b; font-size: 20px; font-weight: bold;
+            background: rgba(0, 0, 0, 0.55); padding: 6px 16px; border-radius: 8px;
+            display: none; pointer-events: none; text-align: center;
+        }
+        #h2hOpponentHUD.visible { display: block; }
+        #h2hOpponentHUD .h2h-name { font-size: 13px; color: #ccc; font-weight: normal; }
+
+        /* H2H lobby/result overlay */
+        #h2hOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 46, 0.92);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 35; pointer-events: auto; padding: 30px 20px; text-align: center;
+        }
+        #h2hOverlay.visible { display: flex; }
+        #h2hOverlay h2 { color: #e0e0e0; font-size: 38px; margin-bottom: 12px; }
+        #h2hOverlay .h2h-sub { color: #aaa; font-size: 18px; margin-bottom: 18px; }
+        #h2hOverlay .h2h-countdown { color: #ffcc02; font-size: 84px; font-weight: bold; margin: 20px 0; }
+        #h2hOverlay .h2h-players {
+            display: flex; gap: 30px; align-items: center; justify-content: center;
+            margin: 20px 0; font-size: 22px;
+        }
+        #h2hOverlay .h2h-player {
+            padding: 12px 18px; background: rgba(255, 255, 255, 0.08); border-radius: 10px;
+            min-width: 120px;
+        }
+        #h2hOverlay .h2h-player.you { outline: 2px solid #5c9eff; color: #5c9eff; }
+        #h2hOverlay .h2h-score { font-size: 36px; font-weight: bold; color: #ffcc02; margin-top: 4px; }
+        #h2hOverlay .h2h-vs { color: #888; font-size: 20px; }
+        #h2hOverlay .h2h-actions { margin-top: 20px; display: flex; gap: 10px; }
+        #h2hOverlay .h2h-result-winner { font-size: 28px; color: #2ecc71; margin-bottom: 8px; }
+        #h2hOverlay .h2h-result-loser { font-size: 22px; color: #ff6b6b; }
+        #h2hOverlay .h2h-result-tie { font-size: 28px; color: #ffcc02; }
+
+        /* H2H invite button */
+        .friend-row .h2h-btn { background: #8e44ad; }
+        .friend-row .h2h-btn:hover { background: #a568c9; }
+
+        /* Achievements */
+        #achievementsScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 30; background: rgba(26, 26, 46, 0.92); pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        #achievementsScreen > * { flex-shrink: 0; }
+        #achievementsScreen::before, #achievementsScreen::after {
+            content: ""; flex: 1 1 0; min-height: 20px;
+        }
+        #achievementsScreen.visible { display: flex; }
+        #achievementsScreen h2 { color: #e0e0e0; font-size: 36px; margin-bottom: 10px; }
+        #achievementsProgress { color: #aaa; font-size: 16px; margin-bottom: 20px; }
+        #achievementsGrid {
+            display: grid; grid-template-columns: 1fr; gap: 10px;
+            width: 460px; max-width: 95%;
+        }
+        .ach-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 14px; background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px; color: #fff;
+        }
+        .ach-card.locked { opacity: 0.45; }
+        .ach-card.unlocked { background: rgba(39, 174, 96, 0.2); }
+        .ach-icon { font-size: 30px; flex-shrink: 0; width: 40px; text-align: center; }
+        .ach-body { flex: 1; }
+        .ach-name { font-size: 16px; font-weight: bold; color: #fff; }
+        .ach-desc { font-size: 13px; color: #ccc; margin-top: 2px; }
+        .ach-card.unlocked .ach-name { color: #2ecc71; }
+        .ach-card.locked .ach-icon { filter: grayscale(1); }
+
+        #achievementsBtn { background: #c0392b; }
+
+        /* Toast */
+        #achievementToast {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background: rgba(0, 0, 0, 0.85); color: #fff;
+            padding: 12px 20px; border-radius: 10px;
+            border: 2px solid #ffcc02; box-shadow: 0 4px 24px rgba(255, 204, 2, 0.4);
+            font-size: 16px; font-weight: bold; z-index: 50;
+            display: flex; align-items: center; gap: 12px;
+            transition: transform 0.4s ease-out; pointer-events: none;
+            max-width: 90%;
+        }
+        #achievementToast.visible { transform: translateX(-50%) translateY(0); }
+        #achievementToast .toast-icon { font-size: 28px; }
+        #achievementToast .toast-label { color: #ffcc02; font-size: 12px; font-weight: normal; }
+        #achievementToast .toast-name { font-size: 16px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: none;
+            align-items: center; justify-content: center;
+            z-index: 40; pointer-events: auto; padding: 20px;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal {
+            background: #2a2a4e; border-radius: 12px; padding: 25px 30px;
+            max-width: 380px; width: 100%;
+        }
+        .modal h3 { color: #fff; font-size: 22px; margin-bottom: 15px; }
+        .modal label { display: block; color: #ccc; font-size: 14px; margin-bottom: 6px; }
+        .modal input[type="number"] {
+            width: 100%; padding: 10px 14px; font-size: 18px;
+            color: #fff; background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #3a7bd5; border-radius: 8px;
+            outline: none; margin-bottom: 15px;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-actions button {
+            padding: 10px 20px; font-size: 15px; border: none; border-radius: 8px;
+            cursor: pointer; color: #fff; font-weight: bold;
+        }
+        .modal-actions .cancel { background: #555; }
+        .modal-actions .cancel:hover { background: #777; }
+        .modal-actions .confirm { background: #3a7bd5; }
+        .modal-actions .confirm:hover { background: #5c9eff; }
+        .modal .modal-error { color: #ff6b6b; font-size: 14px; margin-top: 8px; min-height: 18px; }
+
+        /* Commentary popup */
+        #commentary {
+            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
+            font-size: 28px; font-weight: bold; color: #fff;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 20px rgba(255,204,2,0.4);
+            font-style: italic; pointer-events: none; z-index: 25;
+            opacity: 0; transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+        #commentary.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+    <div id="score">Score: 0</div>
+    <div id="playerName"></div>
+    <div id="challengeTargetHUD"></div>
+    <div id="h2hOpponentHUD"></div>
+    <button id="pauseBtn" aria-label="Pause">⏸</button>
+    <div id="hearts">
+        <span class="heart" id="h1">❤️</span>
+        <span class="heart" id="h2">❤️</span>
+        <span class="heart" id="h3">❤️</span>
+    </div>
+    <div id="centerMessage"></div>
+</div>
+
+<!-- Commentary overlay (outside HUD so it shows on game over too) -->
+<div id="commentary"></div>
+
+<!-- Login / Sign Up Screen -->
+<div id="loginScreen" class="screen">
+    <h1>Goalkeeper26</h1>
+    <div class="auth-hint">Sign in to save your scores, add friends, and challenge them.</div>
+    <input type="text" id="loginUsername" placeholder="Username" maxlength="16" autocomplete="off">
+    <input type="password" id="loginPassword" placeholder="Password" maxlength="32">
+    <button class="btn" id="loginBtn">Log In</button>
+    <button class="btn-small" id="signupBtn">Sign Up</button>
+    <div class="auth-error" id="authError"></div>
+</div>
+
+<!-- Home Screen -->
+<div id="homeScreen" class="screen hidden">
+    <h1>Goalkeeper26</h1>
+    <div id="loggedInAs">Signed in as <span id="currentUserLabel">—</span></div>
+    <div class="highscore" id="homeHighScore">High Score: 0</div>
+    <button class="btn" id="playBtn">Play</button>
+    <button class="btn-small" id="friendsBtn">Friends</button>
+    <button class="btn-small" id="challengesBtn">Challenges<span class="ch-badge" id="chBadge">0</span></button>
+    <button class="btn-small" id="achievementsBtn">Achievements</button>
+    <button class="btn-small" id="howToPlayBtn">How to Play</button>
+    <button class="btn-small" id="leaderboardBtn">Leaderboard</button>
+    <button class="btn-small" id="logoutBtn" style="background: #8b2e2e;">Logout</button>
+</div>
+
+<!-- How to Play Screen -->
+<div id="howToPlayScreen">
+    <h2>How to Play</h2>
+    <ul>
+        <li><span>Arrow Keys</span> — Move the goalkeeper around the field</li>
+        <li><span>Tap</span> — Tap anywhere on the field to move (iPad/phone)</li>
+        <li><span>Block the ball</span> — Stop the soccer ball from going in the goal</li>
+        <li><span>Kick it away</span> — Move into the ball to kick it in your direction</li>
+        <li><span>3 Hearts</span> — You lose a heart each time the ball enters the goal</li>
+        <li><span>Space</span> — Pause the game between balls</li>
+        <li><span>Enter</span> — Start the game</li>
+        <li>The ball gets faster and intervals get shorter as you score!</li>
+    </ul>
+    <button class="btn" id="gotItBtn" style="margin-top: 25px;">Got It!</button>
+</div>
+
+<!-- Game Over Screen -->
+<div id="gameOverScreen" class="screen hidden">
+    <h1>Game Over</h1>
+    <div class="final-score" id="finalScore">Score: 0</div>
+    <div class="final-highscore" id="finalHighScore">High Score: 0</div>
+    <button class="btn" id="playAgainBtn">Play Again</button>
+    <button class="btn-small" id="homeBtn">Back to Home</button>
+    <button class="btn-small" id="howToPlayBtn2">How to Play</button>
+    <button class="btn-small" id="leaderboardBtn2">Leaderboard</button>
+</div>
+
+<!-- Leaderboard Screen -->
+<div id="leaderboardScreen">
+    <h2>🏆 Leaderboard</h2>
+    <ol id="leaderboardList"></ol>
+    <div id="leaderboardEmpty" style="display:none;">No scores yet — be the first!</div>
+    <button class="btn" id="leaderboardCloseBtn" style="margin-top: 25px;">Close</button>
+</div>
+
+<!-- Challenges Screen -->
+<div id="challengesScreen">
+    <h2>⚔️ Challenges</h2>
+    <div class="friends-section">
+        <h3>Head-to-Head Invites</h3>
+        <div id="h2hInvites"><div class="friends-empty">No H2H invites</div></div>
+    </div>
+    <div class="friends-section">
+        <h3>Incoming (play these)</h3>
+        <div id="challengesIncoming"><div class="friends-empty">No incoming challenges</div></div>
+    </div>
+    <div class="friends-section">
+        <h3>Sent</h3>
+        <div id="challengesOutgoing"><div class="friends-empty">No sent challenges</div></div>
+    </div>
+    <button class="btn" id="challengesCloseBtn" style="margin-top: 15px;">Close</button>
+</div>
+
+<!-- H2H Lobby / Result Overlay -->
+<div id="h2hOverlay">
+    <div id="h2hContent"></div>
+</div>
+
+<!-- Achievements Screen -->
+<div id="achievementsScreen">
+    <h2>🏆 Achievements</h2>
+    <div id="achievementsProgress">0 / 0 unlocked</div>
+    <div id="achievementsGrid"></div>
+    <button class="btn" id="achievementsCloseBtn" style="margin-top: 20px; background: #2c3e50;">Close</button>
+</div>
+
+<!-- Achievement Toast -->
+<div id="achievementToast">
+    <div class="toast-icon" id="toastIcon">🏆</div>
+    <div>
+        <div class="toast-label">Achievement unlocked!</div>
+        <div class="toast-name" id="toastName">—</div>
+    </div>
+</div>
+
+<!-- Challenge Modal -->
+<div id="challengeModal" class="modal-overlay">
+    <div class="modal">
+        <h3>Challenge <span id="challengeTargetName">friend</span></h3>
+        <label for="challengeScoreInput">Target score (they must beat this)</label>
+        <input type="number" id="challengeScoreInput" min="1" max="999">
+        <div class="modal-actions">
+            <button class="cancel" id="challengeCancelBtn">Cancel</button>
+            <button class="confirm" id="challengeSendBtn">Send Challenge</button>
+        </div>
+        <div class="modal-error" id="challengeError"></div>
+    </div>
+</div>
+
+<!-- Friends Screen -->
+<div id="friendsScreen">
+    <h2>👥 Friends</h2>
+    <div class="friends-section">
+        <h3>Add Friend</h3>
+        <div class="add-friend-row">
+            <input type="text" id="addFriendInput" placeholder="Username" maxlength="16" autocomplete="off">
+            <button class="btn-small" id="addFriendBtn" style="margin-top:0;">Add</button>
+        </div>
+        <div class="friends-msg" id="addFriendMsg"></div>
+    </div>
+    <div class="friends-section">
+        <h3>Incoming Requests</h3>
+        <div id="incomingList"><div class="friends-empty">No pending requests</div></div>
+    </div>
+    <div class="friends-section">
+        <h3>Your Friends</h3>
+        <div id="friendsList"><div class="friends-empty">No friends yet</div></div>
+    </div>
+    <button class="btn" id="friendsCloseBtn" style="margin-top: 15px;">Close</button>
+</div>
+
+<!-- Pause Screen -->
+<div id="pauseScreen" class="screen hidden">
+    <h1>PAUSED</h1>
+    <button class="btn" id="resumeBtn" style="margin-top: 15px;">Resume</button>
+    <button class="btn-small" id="endGameBtn" style="background: #c0392b;">End Game</button>
+    <p>Press Space to resume</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+    // ============ THREE.JS SETUP ============
+    const scene = new THREE.Scene();
+
+    // Blue sunny sky gradient
+    const skyCanvas = document.createElement('canvas');
+    skyCanvas.width = 1;
+    skyCanvas.height = 512;
+    const skyCtx = skyCanvas.getContext('2d');
+    const skyGrad = skyCtx.createLinearGradient(0, 0, 0, 512);
+    skyGrad.addColorStop(0, '#1e90ff');    // bright blue at top
+    skyGrad.addColorStop(0.4, '#63b3ed');  // lighter blue
+    skyGrad.addColorStop(0.7, '#90cdf4');  // pale blue near horizon
+    skyGrad.addColorStop(1.0, '#e8f4f8');  // almost white at horizon
+    skyCtx.fillStyle = skyGrad;
+    skyCtx.fillRect(0, 0, 1, 512);
+    const skyTexture = new THREE.CanvasTexture(skyCanvas);
+    scene.background = skyTexture;
+    scene.fog = new THREE.Fog(0x90cdf4, 40, 80);
+
+    // Sun
+    const sunGeo = new THREE.SphereGeometry(2, 16, 16);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffee58 });
+    const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    sunMesh.position.set(15, 30, -30);
+    scene.add(sunMesh);
+
+    // Sun glow
+    const glowGeo = new THREE.SphereGeometry(3.5, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xfff9c4, transparent: true, opacity: 0.3 });
+    const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+    glowMesh.position.copy(sunMesh.position);
+    scene.add(glowMesh);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, 22, 18);
+    camera.lookAt(0, 0, -2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ============ LIGHTING ============
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    dirLight.position.set(10, 20, 10);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 60;
+    dirLight.shadow.camera.left = -25;
+    dirLight.shadow.camera.right = 25;
+    dirLight.shadow.camera.top = 25;
+    dirLight.shadow.camera.bottom = -25;
+    scene.add(dirLight);
+
+    // ============ GROUND ============
+    const FIELD_WIDTH = 30;
+    const FIELD_DEPTH = 20;
+
+    // Create grass texture procedurally
+    const grassCanvas = document.createElement('canvas');
+    grassCanvas.width = 512;
+    grassCanvas.height = 512;
+    const gCtx = grassCanvas.getContext('2d');
+    // Base green
+    gCtx.fillStyle = '#3a7a33';
+    gCtx.fillRect(0, 0, 512, 512);
+    // Random grass patches for variation
+    for (let i = 0; i < 8000; i++) {
+        const gx = Math.random() * 512;
+        const gy = Math.random() * 512;
+        const shade = Math.floor(Math.random() * 40);
+        const r = 40 + shade;
+        const g = 100 + Math.floor(Math.random() * 60);
+        const b = 30 + shade;
+        gCtx.fillStyle = `rgb(${r},${g},${b})`;
+        gCtx.fillRect(gx, gy, 1 + Math.random() * 3, 1 + Math.random() * 6);
+    }
+    // Lighter patches
+    for (let i = 0; i < 2000; i++) {
+        const gx = Math.random() * 512;
+        const gy = Math.random() * 512;
+        gCtx.fillStyle = `rgba(120, 180, 80, ${0.1 + Math.random() * 0.15})`;
+        gCtx.fillRect(gx, gy, 2 + Math.random() * 4, 2 + Math.random() * 4);
+    }
+    const grassTexture = new THREE.CanvasTexture(grassCanvas);
+    grassTexture.wrapS = THREE.RepeatWrapping;
+    grassTexture.wrapT = THREE.RepeatWrapping;
+    grassTexture.repeat.set(4, 3);
+
+    // Main ground with grass texture
+    const groundGeo = new THREE.PlaneGeometry(FIELD_WIDTH, FIELD_DEPTH);
+    const groundMat = new THREE.MeshStandardMaterial({ map: grassTexture, roughness: 0.95 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // 3D grass blades
+    const grassBladeCount = 3000;
+    const grassPositions = [];
+    const grassColors = [];
+    for (let i = 0; i < grassBladeCount; i++) {
+        const gx = (Math.random() - 0.5) * FIELD_WIDTH;
+        const gz = (Math.random() - 0.5) * FIELD_DEPTH;
+        const height = 0.15 + Math.random() * 0.35;
+        const lean = (Math.random() - 0.5) * 0.15;
+        // Base of blade
+        grassPositions.push(gx - 0.02, 0, gz);
+        grassPositions.push(gx + 0.02, 0, gz);
+        // Tip of blade
+        grassPositions.push(gx + lean, height, gz + lean);
+        // Second triangle
+        grassPositions.push(gx + 0.02, 0, gz);
+        grassPositions.push(gx - 0.02, 0, gz + 0.04);
+        grassPositions.push(gx + lean, height, gz + lean);
+        // Colors — darker at base, lighter at tip
+        const baseG = 0.25 + Math.random() * 0.15;
+        const tipG = 0.45 + Math.random() * 0.25;
+        for (let t = 0; t < 2; t++) {
+            grassColors.push(0.15, baseG, 0.1);
+            grassColors.push(0.15, baseG, 0.1);
+            grassColors.push(0.2, tipG, 0.12);
+        }
+    }
+    const grassGeo = new THREE.BufferGeometry();
+    grassGeo.setAttribute('position', new THREE.Float32BufferAttribute(grassPositions, 3));
+    grassGeo.setAttribute('color', new THREE.Float32BufferAttribute(grassColors, 3));
+    const grassMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    const grassMesh = new THREE.Mesh(grassGeo, grassMat);
+    scene.add(grassMesh);
+
+    // Field boundary lines
+    const borderGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(FIELD_WIDTH, FIELD_DEPTH));
+    const borderMat = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
+    const border = new THREE.LineSegments(borderGeo, borderMat);
+    border.rotation.x = -Math.PI / 2;
+    border.position.y = 0.02;
+    scene.add(border);
+
+    // ============ SOCCER PITCH MARKINGS (half-pitch) ============
+    const pitchLineMat = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
+    const LY = 0.03; // line height (just above ground)
+
+    function addPitchLine(points) {
+        const pts = points.map(p => new THREE.Vector3(p[0], LY, p[1]));
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        scene.add(new THREE.Line(geo, pitchLineMat));
+    }
+
+    // Half-way line (front edge, Z = -FIELD_DEPTH/2)
+    const halfZ = -FIELD_DEPTH / 2;
+    addPitchLine([[-FIELD_WIDTH / 2, halfZ], [FIELD_WIDTH / 2, halfZ]]);
+
+    // Center circle (semi-circle curving INTO the pitch from front edge)
+    const centerRadius = 5;
+    const circlePoints = [];
+    for (let i = 0; i <= 32; i++) {
+        const angle = (i / 32) * Math.PI; // 0 to PI (semicircle curving into +Z)
+        circlePoints.push([
+            Math.cos(angle) * centerRadius,
+            halfZ + Math.sin(angle) * centerRadius
+        ]);
+    }
+    addPitchLine(circlePoints);
+
+    // Center spot
+    const centerSpotGeo = new THREE.CircleGeometry(0.2, 8);
+    const centerSpotMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
+    const centerSpot = new THREE.Mesh(centerSpotGeo, centerSpotMat);
+    centerSpot.rotation.x = -Math.PI / 2;
+    centerSpot.position.set(0, LY, halfZ);
+    scene.add(centerSpot);
+
+    // Penalty box (18-yard box) — in front of goal
+    const penBoxW = 20;  // width
+    const penBoxD = 6;   // depth from goal line
+    const penBoxZ = FIELD_DEPTH / 2 - penBoxD; // front edge of penalty box
+    addPitchLine([
+        [-penBoxW / 2, FIELD_DEPTH / 2],
+        [-penBoxW / 2, penBoxZ],
+        [penBoxW / 2, penBoxZ],
+        [penBoxW / 2, FIELD_DEPTH / 2]
+    ]);
+
+    // Goal box (6-yard box) — smaller box inside penalty box
+    const goalBoxW = 12;
+    const goalBoxD = 2.5;
+    const goalBoxZ = FIELD_DEPTH / 2 - goalBoxD;
+    addPitchLine([
+        [-goalBoxW / 2, FIELD_DEPTH / 2],
+        [-goalBoxW / 2, goalBoxZ],
+        [goalBoxW / 2, goalBoxZ],
+        [goalBoxW / 2, FIELD_DEPTH / 2]
+    ]);
+
+    // Penalty spot
+    const penSpotZ = FIELD_DEPTH / 2 - 4; // Z = +6
+    const penSpotGeo = new THREE.CircleGeometry(0.15, 8);
+    const penSpot = new THREE.Mesh(penSpotGeo, centerSpotMat);
+    penSpot.rotation.x = -Math.PI / 2;
+    penSpot.position.set(0, LY, penSpotZ);
+    scene.add(penSpot);
+
+    // Penalty arc (arc outside penalty box, centered on penalty spot)
+    const penArcRadius = 3;
+    const penArcPoints = [];
+    for (let i = 0; i <= 24; i++) {
+        const angle = Math.PI + (i / 24) * Math.PI; // semicircle
+        const px = Math.cos(angle) * penArcRadius;
+        const pz = penSpotZ + Math.sin(angle) * penArcRadius;
+        // Only draw the part outside the penalty box (Z < penBoxZ)
+        if (pz <= penBoxZ + 0.05) {
+            penArcPoints.push([px, pz]);
+        }
+    }
+    if (penArcPoints.length > 1) addPitchLine(penArcPoints);
+
+    // Corner arcs (back two corners)
+    const cornerRadius = 1;
+    // Back-left corner (X = -15, Z = +10)
+    const blCorner = [];
+    for (let i = 0; i <= 8; i++) {
+        const angle = 0 + (i / 8) * (Math.PI / 2); // 0 to PI/2
+        blCorner.push([
+            -FIELD_WIDTH / 2 + Math.cos(angle) * cornerRadius,
+            FIELD_DEPTH / 2 - Math.sin(angle) * cornerRadius
+        ]);
+    }
+    addPitchLine(blCorner);
+
+    // Back-right corner (X = +15, Z = +10)
+    const brCorner = [];
+    for (let i = 0; i <= 8; i++) {
+        const angle = Math.PI / 2 + (i / 8) * (Math.PI / 2); // PI/2 to PI
+        brCorner.push([
+            FIELD_WIDTH / 2 + Math.cos(angle) * cornerRadius,
+            FIELD_DEPTH / 2 - Math.sin(angle) * cornerRadius
+        ]);
+    }
+    addPitchLine(brCorner);
+
+    // ============ GOAL (behind the field) ============
+    const GOAL_WIDTH = 14;
+    const GOAL_HEIGHT = 4.5;
+    const GOAL_DEPTH = 3;
+    const GOAL_Z = FIELD_DEPTH / 2 + GOAL_DEPTH / 2; // behind the back edge
+
+    const goalPostMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.6 });
+    const postRadius = 0.12;
+
+    // Left post
+    const leftPostGeo = new THREE.CylinderGeometry(postRadius, postRadius, GOAL_HEIGHT, 8);
+    const leftPost = new THREE.Mesh(leftPostGeo, goalPostMat);
+    leftPost.position.set(-GOAL_WIDTH / 2, GOAL_HEIGHT / 2, FIELD_DEPTH / 2);
+    leftPost.castShadow = true;
+    scene.add(leftPost);
+
+    // Right post
+    const rightPost = new THREE.Mesh(leftPostGeo, goalPostMat);
+    rightPost.position.set(GOAL_WIDTH / 2, GOAL_HEIGHT / 2, FIELD_DEPTH / 2);
+    rightPost.castShadow = true;
+    scene.add(rightPost);
+
+    // Crossbar
+    const crossbarGeo = new THREE.CylinderGeometry(postRadius, postRadius, GOAL_WIDTH, 8);
+    const crossbar = new THREE.Mesh(crossbarGeo, goalPostMat);
+    crossbar.rotation.z = Math.PI / 2;
+    crossbar.position.set(0, GOAL_HEIGHT, FIELD_DEPTH / 2);
+    crossbar.castShadow = true;
+    scene.add(crossbar);
+
+    // Back top bar
+    const backTopGeo = new THREE.CylinderGeometry(postRadius * 0.8, postRadius * 0.8, GOAL_WIDTH, 8);
+    const backTop = new THREE.Mesh(backTopGeo, goalPostMat);
+    backTop.rotation.z = Math.PI / 2;
+    backTop.position.set(0, GOAL_HEIGHT * 0.7, FIELD_DEPTH / 2 + GOAL_DEPTH);
+    scene.add(backTop);
+
+    // Back left post
+    const backPostGeo = new THREE.CylinderGeometry(postRadius * 0.8, postRadius * 0.8, GOAL_HEIGHT * 0.7, 8);
+    const backLeftPost = new THREE.Mesh(backPostGeo, goalPostMat);
+    backLeftPost.position.set(-GOAL_WIDTH / 2, GOAL_HEIGHT * 0.35, FIELD_DEPTH / 2 + GOAL_DEPTH);
+    scene.add(backLeftPost);
+
+    // Back right post
+    const backRightPost = new THREE.Mesh(backPostGeo, goalPostMat);
+    backRightPost.position.set(GOAL_WIDTH / 2, GOAL_HEIGHT * 0.35, FIELD_DEPTH / 2 + GOAL_DEPTH);
+    scene.add(backRightPost);
+
+    // Side bars connecting front to back (top)
+    const sideBarGeo = new THREE.CylinderGeometry(postRadius * 0.8, postRadius * 0.8, GOAL_DEPTH, 8);
+    const sideBarLeft = new THREE.Mesh(sideBarGeo, goalPostMat);
+    sideBarLeft.rotation.x = Math.PI / 2;
+    sideBarLeft.position.set(-GOAL_WIDTH / 2, GOAL_HEIGHT * 0.85, FIELD_DEPTH / 2 + GOAL_DEPTH / 2);
+    scene.add(sideBarLeft);
+
+    const sideBarRight = new THREE.Mesh(sideBarGeo, goalPostMat);
+    sideBarRight.rotation.x = Math.PI / 2;
+    sideBarRight.position.set(GOAL_WIDTH / 2, GOAL_HEIGHT * 0.85, FIELD_DEPTH / 2 + GOAL_DEPTH / 2);
+    scene.add(sideBarRight);
+
+    // Goal net (semi-transparent mesh)
+    const netMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+
+    // Back net
+    const backNetGeo = new THREE.PlaneGeometry(GOAL_WIDTH, GOAL_HEIGHT * 0.7);
+    const backNet = new THREE.Mesh(backNetGeo, netMat);
+    backNet.position.set(0, GOAL_HEIGHT * 0.35, FIELD_DEPTH / 2 + GOAL_DEPTH);
+    scene.add(backNet);
+
+    // Left side net
+    const sideNetGeo = new THREE.PlaneGeometry(GOAL_DEPTH, GOAL_HEIGHT);
+    const leftNet = new THREE.Mesh(sideNetGeo, netMat);
+    leftNet.rotation.y = Math.PI / 2;
+    leftNet.position.set(-GOAL_WIDTH / 2, GOAL_HEIGHT / 2, FIELD_DEPTH / 2 + GOAL_DEPTH / 2);
+    scene.add(leftNet);
+
+    // Right side net
+    const rightNet = new THREE.Mesh(sideNetGeo, netMat);
+    rightNet.rotation.y = Math.PI / 2;
+    rightNet.position.set(GOAL_WIDTH / 2, GOAL_HEIGHT / 2, FIELD_DEPTH / 2 + GOAL_DEPTH / 2);
+    scene.add(rightNet);
+
+    // Top net
+    const topNetGeo = new THREE.PlaneGeometry(GOAL_WIDTH, GOAL_DEPTH);
+    const topNet = new THREE.Mesh(topNetGeo, netMat);
+    topNet.rotation.x = Math.PI / 2;
+    topNet.position.set(0, GOAL_HEIGHT * 0.85, FIELD_DEPTH / 2 + GOAL_DEPTH / 2);
+    scene.add(topNet);
+
+    // ============ STANDS / BLEACHERS ============
+    const standMat = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.8 });
+
+    // Left stand — 3 tiered rows stepping up and outward
+    for (let row = 0; row < 3; row++) {
+        const standX = -FIELD_WIDTH / 2 - 1.8 - row * 1.1;
+        const standY = row * 0.3;
+        const standGeo = new THREE.BoxGeometry(1.0, 0.3 + row * 0.3, FIELD_DEPTH + 1);
+        const stand = new THREE.Mesh(standGeo, standMat);
+        stand.position.set(standX, (0.3 + row * 0.3) / 2 + standY / 2, 0);
+        stand.receiveShadow = true;
+        scene.add(stand);
+    }
+
+    // Right stand
+    for (let row = 0; row < 3; row++) {
+        const standX = FIELD_WIDTH / 2 + 1.8 + row * 1.1;
+        const standY = row * 0.3;
+        const standGeo = new THREE.BoxGeometry(1.0, 0.3 + row * 0.3, FIELD_DEPTH + 1);
+        const stand = new THREE.Mesh(standGeo, standMat);
+        stand.position.set(standX, (0.3 + row * 0.3) / 2 + standY / 2, 0);
+        stand.receiveShadow = true;
+        scene.add(stand);
+    }
+
+    // Front stand
+    for (let row = 0; row < 3; row++) {
+        const standZ = -FIELD_DEPTH / 2 - 1.8 - row * 1.1;
+        const standY = row * 0.3;
+        const standGeo = new THREE.BoxGeometry(FIELD_WIDTH + 1, 0.3 + row * 0.3, 1.0);
+        const stand = new THREE.Mesh(standGeo, standMat);
+        stand.position.set(0, (0.3 + row * 0.3) / 2 + standY / 2, standZ);
+        stand.receiveShadow = true;
+        scene.add(stand);
+    }
+
+    // ============ SPECTATORS ============
+    const shirtColors = [0xe53935, 0x1e88e5, 0x43a047, 0xfdd835, 0xff8f00, 0x8e24aa, 0xffffff, 0x222222];
+    const skinTones = [0xffdbac, 0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524];
+    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 6);
+    const headGeo = new THREE.SphereGeometry(0.25, 6, 6);
+
+    const spectatorPositions = [];
+
+    // Left side (3 rows)
+    for (let row = 0; row < 3; row++) {
+        const x = -FIELD_WIDTH / 2 - 1.8 - row * 1.1;
+        const yOffset = row * 0.6;
+        for (let i = 0; i < 16; i++) {
+            const z = -FIELD_DEPTH / 2 + 0.5 + i * (FIELD_DEPTH / 15.5);
+            spectatorPositions.push({ x: x + (Math.random() - 0.5) * 0.3, z: z + (Math.random() - 0.5) * 0.3, yBase: yOffset });
+        }
+    }
+
+    // Right side (3 rows)
+    for (let row = 0; row < 3; row++) {
+        const x = FIELD_WIDTH / 2 + 1.8 + row * 1.1;
+        const yOffset = row * 0.6;
+        for (let i = 0; i < 16; i++) {
+            const z = -FIELD_DEPTH / 2 + 0.5 + i * (FIELD_DEPTH / 15.5);
+            spectatorPositions.push({ x: x + (Math.random() - 0.5) * 0.3, z: z + (Math.random() - 0.5) * 0.3, yBase: yOffset });
+        }
+    }
+
+    // Front side (3 rows)
+    for (let row = 0; row < 3; row++) {
+        const z = -FIELD_DEPTH / 2 - 1.8 - row * 1.1;
+        const yOffset = row * 0.6;
+        for (let i = 0; i < 22; i++) {
+            const x = -FIELD_WIDTH / 2 + 0.5 + i * (FIELD_WIDTH / 21.5);
+            spectatorPositions.push({ x: x + (Math.random() - 0.5) * 0.3, z: z + (Math.random() - 0.5) * 0.3, yBase: yOffset });
+        }
+    }
+
+    // Build instanced meshes for performance
+    const bodyInstancedMesh = new THREE.InstancedMesh(bodyGeo, new THREE.MeshStandardMaterial({ roughness: 0.7 }), spectatorPositions.length);
+    const headInstancedMesh = new THREE.InstancedMesh(headGeo, new THREE.MeshStandardMaterial({ roughness: 0.6 }), spectatorPositions.length);
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    spectatorPositions.forEach((pos, i) => {
+        const yb = pos.yBase || 0;
+        // Body
+        dummy.position.set(pos.x, 0.6 + yb, pos.z);
+        dummy.updateMatrix();
+        bodyInstancedMesh.setMatrixAt(i, dummy.matrix);
+        color.setHex(shirtColors[Math.floor(Math.random() * shirtColors.length)]);
+        bodyInstancedMesh.setColorAt(i, color);
+
+        // Head
+        dummy.position.set(pos.x, 1.45 + yb, pos.z);
+        dummy.updateMatrix();
+        headInstancedMesh.setMatrixAt(i, dummy.matrix);
+        color.setHex(skinTones[Math.floor(Math.random() * skinTones.length)]);
+        headInstancedMesh.setColorAt(i, color);
+    });
+
+    bodyInstancedMesh.instanceMatrix.needsUpdate = true;
+    bodyInstancedMesh.instanceColor.needsUpdate = true;
+    headInstancedMesh.instanceMatrix.needsUpdate = true;
+    headInstancedMesh.instanceColor.needsUpdate = true;
+    scene.add(bodyInstancedMesh);
+    scene.add(headInstancedMesh);
+
+    // ============ PLAYER (10-YEAR-OLD BOY) ============
+    const PLAYER_SIZE = 2.7;
+    const playerMesh = new THREE.Group();
+    playerMesh.scale.set(1.5, 1.5, 1.5);
+
+    // T-shirt (bright blue casual kid shirt)
+    const tshirtMat = new THREE.MeshStandardMaterial({ color: 0x2196F3, roughness: 0.5 });
+    // Shorts (tan/khaki kid shorts)
+    const kidShortsMat = new THREE.MeshStandardMaterial({ color: 0xD2B48C, roughness: 0.6 });
+    // Skin
+    const kidSkinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 });
+    // Hair (dark brown)
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x3E2723, roughness: 0.8 });
+    // Sneakers (red)
+    const sneakerMat = new THREE.MeshStandardMaterial({ color: 0xE53935, roughness: 0.5 });
+    // Soles (white)
+    const soleMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.6 });
+
+    // Torso (smaller, blue t-shirt)
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.24, 0.5, 8), tshirtMat);
+    torso.position.y = 0.85;
+    torso.castShadow = true;
+    playerMesh.add(torso);
+
+    // Head (proportionally bigger relative to body — kid proportions)
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), kidSkinMat);
+    head.position.y = 1.32;
+    head.castShadow = true;
+    playerMesh.add(head);
+
+    // Hair (half-sphere sitting on top of head)
+    const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(0.23, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2), hairMat
+    );
+    hair.position.y = 1.35;
+    hair.castShadow = true;
+    playerMesh.add(hair);
+
+    // Left arm (shorter, t-shirt colored, natural angle)
+    const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.4, 6), tshirtMat);
+    leftArm.position.set(-0.38, 0.9, 0);
+    leftArm.rotation.z = Math.PI / 6;
+    leftArm.castShadow = true;
+    playerMesh.add(leftArm);
+
+    // Right arm
+    const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.4, 6), tshirtMat);
+    rightArm.position.set(0.38, 0.9, 0);
+    rightArm.rotation.z = -Math.PI / 6;
+    rightArm.castShadow = true;
+    playerMesh.add(rightArm);
+
+    // Left hand (small sphere, skin — no gloves!)
+    const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), kidSkinMat);
+    leftHand.position.set(-0.50, 0.72, 0);
+    playerMesh.add(leftHand);
+
+    // Right hand
+    const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), kidSkinMat);
+    rightHand.position.set(0.50, 0.72, 0);
+    playerMesh.add(rightHand);
+
+    // Left leg (tan shorts)
+    const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 6), kidShortsMat);
+    leftLeg.position.set(-0.12, 0.40, 0);
+    leftLeg.castShadow = true;
+    playerMesh.add(leftLeg);
+
+    // Left sneaker (red)
+    const leftSneaker = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.08, 0.2), sneakerMat);
+    leftSneaker.position.set(-0.12, 0.16, 0.03);
+    playerMesh.add(leftSneaker);
+
+    // Left sole (white)
+    const leftSole = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.21), soleMat);
+    leftSole.position.set(-0.12, 0.12, 0.03);
+    playerMesh.add(leftSole);
+
+    // Right leg pivot group (positioned at hip joint for kick animation)
+    const rightLegPivot = new THREE.Group();
+    rightLegPivot.position.set(0.12, 0.60, 0);
+    playerMesh.add(rightLegPivot);
+
+    // Right leg (relative to pivot — hangs down from hip)
+    const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 6), kidShortsMat);
+    rightLeg.position.set(0, -0.20, 0);
+    rightLeg.castShadow = true;
+    rightLegPivot.add(rightLeg);
+
+    // Right sneaker (relative to pivot)
+    const rightSneaker = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.08, 0.2), sneakerMat);
+    rightSneaker.position.set(0, -0.44, 0.03);
+    rightLegPivot.add(rightSneaker);
+
+    // Right sole (relative to pivot)
+    const rightSole = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.21), soleMat);
+    rightSole.position.set(0, -0.48, 0.03);
+    rightLegPivot.add(rightSole);
+
+    playerMesh.visible = false;
+    scene.add(playerMesh);
+
+    // ============ BALL (SOCCER BALL) ============
+    const BALL_RADIUS_3D = 0.6;
+    // Create soccer ball texture
+    const soccerCanvas = document.createElement('canvas');
+    soccerCanvas.width = 256;
+    soccerCanvas.height = 256;
+    const sCtx = soccerCanvas.getContext('2d');
+    // White base
+    sCtx.fillStyle = '#ffffff';
+    sCtx.fillRect(0, 0, 256, 256);
+    // Black pentagon pattern
+    sCtx.fillStyle = '#222222';
+    const pentagons = [
+        [128, 128], [40, 60], [216, 60], [40, 196], [216, 196],
+        [128, 30], [128, 226], [30, 128], [226, 128]
+    ];
+    pentagons.forEach(([px, py]) => {
+        sCtx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+            const r = 22;
+            const x = px + r * Math.cos(angle);
+            const y = py + r * Math.sin(angle);
+            if (i === 0) sCtx.moveTo(x, y); else sCtx.lineTo(x, y);
+        }
+        sCtx.closePath();
+        sCtx.fill();
+    });
+    // Black lines connecting pentagons
+    sCtx.strokeStyle = '#333333';
+    sCtx.lineWidth = 3;
+    pentagons.forEach(([px, py]) => {
+        for (let i = 0; i < 5; i++) {
+            const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+            const r = 22;
+            const x = px + r * Math.cos(angle);
+            const y = py + r * Math.sin(angle);
+            sCtx.beginPath();
+            sCtx.moveTo(x, y);
+            const ex = px + 38 * Math.cos(angle);
+            const ey = py + 38 * Math.sin(angle);
+            sCtx.lineTo(ex, ey);
+            sCtx.stroke();
+        }
+    });
+    const soccerTexture = new THREE.CanvasTexture(soccerCanvas);
+
+    const ballGeo = new THREE.SphereGeometry(BALL_RADIUS_3D, 24, 24);
+    const ballMat = new THREE.MeshStandardMaterial({ map: soccerTexture, roughness: 0.6, metalness: 0.05 });
+    const ballMesh = new THREE.Mesh(ballGeo, ballMat);
+    ballMesh.castShadow = true;
+    ballMesh.visible = false;
+    scene.add(ballMesh);
+
+    // Ball shadow on ground
+    const shadowGeo = new THREE.CircleGeometry(BALL_RADIUS_3D * 1.2, 16);
+    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.25, transparent: true });
+    const ballShadow = new THREE.Mesh(shadowGeo, shadowMat);
+    ballShadow.rotation.x = -Math.PI / 2;
+    ballShadow.position.y = 0.03;
+    ballShadow.visible = false;
+    scene.add(ballShadow);
+
+    // ============ GAME STATE ============
+    let gameState = 'home'; // home, playing, paused, gameover
+    let score = 0;
+    let lives = 3;
+    let highScore = parseInt(localStorage.getItem('ballCatcherHighScore')) || 0;
+    let username = ''; // set after login
+    let currentPw = '';
+
+    const BASE_PLAYER_SPEED = 0.15;
+    const BASE_BALL_SPEED = 0.15;
+
+    let player = { x: 0, z: 5, speed: BASE_PLAYER_SPEED, prevX: 0, prevZ: 0 };
+    let ball = { x: 0, y: 1, z: 0, vx: 0, vy: 0, vz: 0, active: false, enteredField: false, rebounded: false };
+
+    let waitTimer = 0;
+    let waitDuration = 0;
+    let lastTime = 0;
+    let canPause = false;
+    let touchTarget = null;
+    let lastBeepSec = 0;
+
+    // Kick animation state
+    let kickTimer = 0;
+    const KICK_DURATION = 0.4;
+    const KICK_WINDUP = 0.15;   // time for leg to swing forward
+    const KICK_CONTACT = 0.05;  // brief hold at contact
+    const KICK_FOLLOW = 0.20;   // leg follows through and returns
+    const KICK_ANGLE = -1.3;    // max forward rotation (radians)
+    let kickPhase = 'none';     // 'windup', 'contact', 'follow', 'none'
+    let kickBallVx = 0;         // stored rebound velocity
+    let kickBallVz = 0;
+    let kickBallVy = 0;
+    let ballHeld = false;       // is the ball being held at player's foot?
+
+    // ============ SOUND (Web Audio API) ============
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+    }
+
+    function playKick() {
+        const ctx = getAudioCtx();
+        // Short punchy kick sound
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+        // Add a noise burst for impact
+        const bufferSize = ctx.sampleRate * 0.05;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const noiseGain = ctx.createGain();
+        noise.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noiseGain.gain.setValueAtTime(0.3, ctx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        noise.start(ctx.currentTime);
+    }
+
+    // --- Disappointing goal sounds (randomly picked) ---
+    function playGoalSadTrombone() {
+        const ctx = getAudioCtx();
+        // Classic "wah wah wah waaah" sad trombone
+        const notes = [392, 370, 349, 261]; // G4, F#4, F4, C4
+        const durations = [0.25, 0.25, 0.25, 0.6];
+        let t = ctx.currentTime;
+        notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, t);
+            // Add vibrato on the last long note
+            if (i === 3) {
+                osc.frequency.setValueAtTime(freq, t);
+                osc.frequency.linearRampToValueAtTime(freq * 0.92, t + durations[i]);
+            }
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.2, t + durations[i] * 0.7);
+            gain.gain.linearRampToValueAtTime(0, t + durations[i]);
+            osc.start(t);
+            osc.stop(t + durations[i]);
+            t += durations[i];
+        });
+    }
+
+    function playGoalCrowdGroan() {
+        const ctx = getAudioCtx();
+        const duration = 1.0;
+        // Deep rumbling groan — disappointed crowd
+        const buf = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) {
+            const t = i / ctx.sampleRate;
+            // Envelope: quick rise, slow fade
+            const env = Math.min(t / 0.08, 1) * Math.pow(1 - t / duration, 0.6);
+            d[i] = (Math.random() * 2 - 1) * env;
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        // Low-pass filter to make it deep and rumbly
+        const filt = ctx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.setValueAtTime(500, ctx.currentTime);
+        filt.frequency.linearRampToValueAtTime(250, ctx.currentTime + duration);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.5, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(ctx.destination);
+        src.start(ctx.currentTime);
+        // Add a descending "ohhh" tone underneath
+        const osc = ctx.createOscillator();
+        const oGain = ctx.createGain();
+        osc.connect(oGain);
+        oGain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(250, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + duration);
+        oGain.gain.setValueAtTime(0.15, ctx.currentTime);
+        oGain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration);
+    }
+
+    function playGoalBuzzer() {
+        const ctx = getAudioCtx();
+        // Harsh game-show-wrong-answer buzzer
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.type = 'square';
+        osc2.type = 'square';
+        osc1.frequency.setValueAtTime(120, ctx.currentTime);
+        osc2.frequency.setValueAtTime(150, ctx.currentTime); // slightly detuned for harshness
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.4);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.55);
+        osc1.start(ctx.currentTime);
+        osc2.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.55);
+        osc2.stop(ctx.currentTime + 0.55);
+    }
+
+    const goalSounds = [playGoalSadTrombone, playGoalCrowdGroan, playGoalBuzzer];
+    function playGoal() {
+        goalSounds[Math.floor(Math.random() * goalSounds.length)]();
+    }
+
+    // --- Enthusiastic crowd cheer: whistles + cheering + "come on!" energy ---
+    function playCrowdCheer() {
+        const ctx = getAudioCtx();
+        const duration = 2.015;
+
+        // Layer 1 — massive crowd roar (low rumble building fast)
+        const buf1 = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+        const d1 = buf1.getChannelData(0);
+        for (let i = 0; i < d1.length; i++) {
+            const t = i / ctx.sampleRate;
+            const env = Math.min(t / 0.04, 1) * Math.pow(Math.sin(t * Math.PI / duration), 0.4);
+            d1[i] = (Math.random() * 2 - 1) * env;
+        }
+        const src1 = ctx.createBufferSource();
+        src1.buffer = buf1;
+        const filt1 = ctx.createBiquadFilter();
+        filt1.type = 'lowpass';
+        filt1.frequency.value = 800;
+        const g1 = ctx.createGain();
+        g1.gain.setValueAtTime(0, ctx.currentTime);
+        g1.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.06);
+        g1.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 1.0);
+        g1.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        src1.connect(filt1); filt1.connect(g1); g1.connect(ctx.destination);
+        src1.start(ctx.currentTime);
+
+        // Layer 2 — excited mid-high crowd screaming/cheering
+        const buf2 = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+        const d2 = buf2.getChannelData(0);
+        for (let i = 0; i < d2.length; i++) {
+            const t = i / ctx.sampleRate;
+            const env = Math.min(t / 0.03, 1) * Math.pow(Math.sin(t * Math.PI / duration), 0.5);
+            d2[i] = (Math.random() * 2 - 1) * env;
+        }
+        const src2 = ctx.createBufferSource();
+        src2.buffer = buf2;
+        const filt2 = ctx.createBiquadFilter();
+        filt2.type = 'bandpass';
+        filt2.frequency.setValueAtTime(1500, ctx.currentTime);
+        filt2.frequency.linearRampToValueAtTime(3500, ctx.currentTime + 0.15);
+        filt2.frequency.linearRampToValueAtTime(2500, ctx.currentTime + 1.0);
+        filt2.Q.value = 0.3;
+        const g2 = ctx.createGain();
+        g2.gain.setValueAtTime(0, ctx.currentTime);
+        g2.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 0.05);
+        g2.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.8);
+        g2.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        src2.connect(filt2); filt2.connect(g2); g2.connect(ctx.destination);
+        src2.start(ctx.currentTime);
+
+        // Layer 3 — multiple scattered whistles throughout
+        const whistleTimes = [0, 0.12, 0.28, 0.4, 0.52, 0.65, 0.78, 0.9, 1.02, 1.15, 1.3, 1.5];
+        whistleTimes.forEach(delay => {
+            const osc = ctx.createOscillator();
+            const wg = ctx.createGain();
+            osc.connect(wg); wg.connect(ctx.destination);
+            osc.type = 'sine';
+            const baseFreq = 2600 + Math.random() * 600;
+            osc.frequency.setValueAtTime(baseFreq, ctx.currentTime + delay);
+            osc.frequency.linearRampToValueAtTime(baseFreq + 200 + Math.random() * 300, ctx.currentTime + delay + 0.15);
+            osc.frequency.linearRampToValueAtTime(baseFreq - 100, ctx.currentTime + delay + 0.25);
+            const vol = 0.22 + Math.random() * 0.1;
+            wg.gain.setValueAtTime(0, ctx.currentTime + delay);
+            wg.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.02);
+            wg.gain.linearRampToValueAtTime(vol * 0.8, ctx.currentTime + delay + 0.15);
+            wg.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.28);
+            osc.start(ctx.currentTime + delay);
+            osc.stop(ctx.currentTime + delay + 0.28);
+        });
+
+        // Layer 4 — rhythmic clapping/stomping underneath (fast "come on!" rhythm)
+        for (let c = 0; c < 10; c++) {
+            const clapTime = ctx.currentTime + 0.1 + c * 0.15;
+            if (clapTime > ctx.currentTime + duration) break;
+            const bufSize = Math.floor(ctx.sampleRate * 0.04);
+            const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+                d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 2.5);
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            const filt = ctx.createBiquadFilter();
+            filt.type = 'bandpass';
+            filt.frequency.value = 1500 + Math.random() * 500;
+            filt.Q.value = 0.6;
+            const cg = ctx.createGain();
+            const cVol = (c < 6 ? 0.3 + c * 0.04 : 0.5 - (c - 6) * 0.08);
+            cg.gain.setValueAtTime(cVol, clapTime);
+            cg.gain.linearRampToValueAtTime(0, clapTime + 0.04);
+            src.connect(filt); filt.connect(cg); cg.connect(ctx.destination);
+            src.start(clapTime);
+        }
+
+        // Layer 5 — high energy burst at the start (initial gasp/explosion)
+        const burstBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.3), ctx.sampleRate);
+        const burstD = burstBuf.getChannelData(0);
+        for (let i = 0; i < burstD.length; i++) {
+            const t = i / ctx.sampleRate;
+            burstD[i] = (Math.random() * 2 - 1) * Math.pow(1 - t / 0.3, 2);
+        }
+        const burstSrc = ctx.createBufferSource();
+        burstSrc.buffer = burstBuf;
+        const burstFilt = ctx.createBiquadFilter();
+        burstFilt.type = 'highpass';
+        burstFilt.frequency.value = 2000;
+        const burstGain = ctx.createGain();
+        burstGain.gain.setValueAtTime(0.35, ctx.currentTime);
+        burstGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+        burstSrc.connect(burstFilt); burstFilt.connect(burstGain); burstGain.connect(ctx.destination);
+        burstSrc.start(ctx.currentTime);
+    }
+
+    function playThunderClapStorm() {
+        const ctx = getAudioCtx();
+        const duration = 1.6;
+        // Layer 1 — massive thunderous rolling claps
+        const clapCount = 20;
+        for (let c = 0; c < clapCount; c++) {
+            const clapTime = ctx.currentTime + c * 0.07 + Math.random() * 0.03;
+            const bufSize = Math.floor(ctx.sampleRate * 0.06);
+            const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+                d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 2);
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            const filt = ctx.createBiquadFilter();
+            filt.type = 'bandpass';
+            filt.frequency.value = 1200 + Math.random() * 800;
+            filt.Q.value = 0.5;
+            const cg = ctx.createGain();
+            // Build up then fade out
+            const progress = c / clapCount;
+            const vol = (progress < 0.4 ? progress / 0.4 : 1 - (progress - 0.4) / 0.6) * 0.55;
+            cg.gain.setValueAtTime(vol, clapTime);
+            cg.gain.linearRampToValueAtTime(0, clapTime + 0.06);
+            src.connect(filt); filt.connect(cg); cg.connect(ctx.destination);
+            src.start(clapTime);
+        }
+        // Layer 2 — deep reverberant thunder rumble underneath
+        const tBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
+        const tD = tBuf.getChannelData(0);
+        for (let i = 0; i < tD.length; i++) {
+            const t = i / ctx.sampleRate;
+            const env = Math.min(t / 0.1, 1) * Math.pow(1 - t / duration, 0.7);
+            tD[i] = (Math.random() * 2 - 1) * env;
+        }
+        const tSrc = ctx.createBufferSource();
+        tSrc.buffer = tBuf;
+        const tFilt = ctx.createBiquadFilter();
+        tFilt.type = 'lowpass';
+        tFilt.frequency.value = 400;
+        const tGain = ctx.createGain();
+        tGain.gain.setValueAtTime(0, ctx.currentTime);
+        tGain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.15);
+        tGain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.8);
+        tGain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+        tSrc.connect(tFilt); tFilt.connect(tGain); tGain.connect(ctx.destination);
+        tSrc.start(ctx.currentTime);
+        // Layer 3 — bright crowd excitement on top
+        const eBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 1.0), ctx.sampleRate);
+        const eD = eBuf.getChannelData(0);
+        for (let i = 0; i < eD.length; i++) {
+            const t = i / ctx.sampleRate;
+            eD[i] = (Math.random() * 2 - 1) * Math.pow(Math.sin(t * Math.PI / 1.0), 0.5);
+        }
+        const eSrc = ctx.createBufferSource();
+        eSrc.buffer = eBuf;
+        const eFilt = ctx.createBiquadFilter();
+        eFilt.type = 'highpass';
+        eFilt.frequency.value = 1500;
+        const eGain = ctx.createGain();
+        eGain.gain.setValueAtTime(0, ctx.currentTime);
+        eGain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.1);
+        eGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.0);
+        eSrc.connect(eFilt); eFilt.connect(eGain); eGain.connect(ctx.destination);
+        eSrc.start(ctx.currentTime);
+    }
+
+    function playGameOver() {
+        const ctx = getAudioCtx();
+        // Three descending tones
+        [0, 0.25, 0.5].forEach((delay, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300 - i * 60, ctx.currentTime + delay);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.25);
+            osc.start(ctx.currentTime + delay);
+            osc.stop(ctx.currentTime + delay + 0.25);
+        });
+    }
+
+    function playBeep() {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+    }
+
+    // ============ COMMENTARY SYSTEM ============
+    const commentaryEl = document.getElementById('commentary');
+    let commentaryTimer = 0;
+
+    const saveComments = [
+        "What a save!", "Brilliant stop!", "Incredible reflexes!",
+        "He's on fire!", "Unbelievable!", "Take a bow!",
+        "The crowd goes wild!", "Sensational!", "World class!",
+        "Nothing gets past him!", "Outstanding!", "Super save!"
+    ];
+    const goalComments = [
+        "Oh no!", "That's in!", "He couldn't reach it!",
+        "Goal conceded!", "Heartbreak!", "So close!",
+        "The keeper is beaten!", "Devastating!"
+    ];
+    const streakComments = [
+        "He's unstoppable!", "What a run!", "On a roll!",
+        "Can anyone score?!", "Magnificent form!"
+    ];
+    const gameOverComments = [
+        "What a performance!", "The final whistle blows!",
+        "That's the end!", "Game over!"
+    ];
+
+    function showCommentary(text) {
+        commentaryEl.textContent = text;
+        commentaryEl.classList.add('visible');
+        commentaryTimer = 2.0; // show for 2 seconds
+    }
+
+    function updateCommentary(dt) {
+        if (commentaryTimer > 0) {
+            commentaryTimer -= dt;
+            if (commentaryTimer <= 0.3 && commentaryEl.classList.contains('visible')) {
+                commentaryEl.classList.remove('visible'); // fade out
+            }
+            if (commentaryTimer <= 0) {
+                commentaryTimer = 0;
+                commentaryEl.classList.remove('visible');
+            }
+        }
+    }
+
+    // Commentator voice sounds
+    function playCommentatorExcited() {
+        const ctx = getAudioCtx();
+        const t = ctx.currentTime;
+        // Excited rising "GOOOAL SAVED!" — layered for richness
+        const notes = [280, 380, 480, 620];
+        notes.forEach((freq, i) => {
+            const start = t + i * 0.14;
+            // Main voice (sawtooth for buzz)
+            const osc1 = ctx.createOscillator();
+            const g1 = ctx.createGain();
+            osc1.connect(g1); g1.connect(ctx.destination);
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(freq, start);
+            osc1.frequency.linearRampToValueAtTime(freq * 1.1, start + 0.16);
+            g1.gain.setValueAtTime(0.3, start);
+            g1.gain.linearRampToValueAtTime(0.4, start + 0.06);
+            g1.gain.linearRampToValueAtTime(0, start + 0.18);
+            osc1.start(start); osc1.stop(start + 0.18);
+            // Harmonic layer (square for body)
+            const osc2 = ctx.createOscillator();
+            const g2 = ctx.createGain();
+            osc2.connect(g2); g2.connect(ctx.destination);
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(freq * 0.5, start);
+            g2.gain.setValueAtTime(0.15, start);
+            g2.gain.linearRampToValueAtTime(0, start + 0.16);
+            osc2.start(start); osc2.stop(start + 0.16);
+        });
+    }
+
+    function playCommentatorDisappointed() {
+        const ctx = getAudioCtx();
+        const t = ctx.currentTime;
+        // Descending "Ohhh nooo" — two voices
+        const osc1 = ctx.createOscillator();
+        const g1 = ctx.createGain();
+        osc1.connect(g1); g1.connect(ctx.destination);
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(500, t);
+        osc1.frequency.exponentialRampToValueAtTime(180, t + 0.6);
+        g1.gain.setValueAtTime(0.35, t);
+        g1.gain.linearRampToValueAtTime(0.25, t + 0.3);
+        g1.gain.linearRampToValueAtTime(0, t + 0.6);
+        osc1.start(t); osc1.stop(t + 0.6);
+        // Lower sympathetic groan
+        const osc2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        osc2.connect(g2); g2.connect(ctx.destination);
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(250, t + 0.05);
+        osc2.frequency.exponentialRampToValueAtTime(100, t + 0.55);
+        g2.gain.setValueAtTime(0.2, t + 0.05);
+        g2.gain.linearRampToValueAtTime(0, t + 0.55);
+        osc2.start(t + 0.05); osc2.stop(t + 0.55);
+    }
+
+    function playCommentatorAmazed() {
+        const ctx = getAudioCtx();
+        const t = ctx.currentTime;
+        // Quick ascending "WOW!" — louder and multi-layered
+        const osc1 = ctx.createOscillator();
+        const g1 = ctx.createGain();
+        osc1.connect(g1); g1.connect(ctx.destination);
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(220, t);
+        osc1.frequency.exponentialRampToValueAtTime(850, t + 0.18);
+        osc1.frequency.exponentialRampToValueAtTime(650, t + 0.4);
+        g1.gain.setValueAtTime(0.4, t);
+        g1.gain.linearRampToValueAtTime(0.3, t + 0.25);
+        g1.gain.linearRampToValueAtTime(0, t + 0.45);
+        osc1.start(t); osc1.stop(t + 0.45);
+        // High harmonic "sparkle"
+        const osc2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        osc2.connect(g2); g2.connect(ctx.destination);
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(440, t);
+        osc2.frequency.exponentialRampToValueAtTime(1200, t + 0.15);
+        g2.gain.setValueAtTime(0.15, t);
+        g2.gain.linearRampToValueAtTime(0, t + 0.3);
+        osc2.start(t); osc2.stop(t + 0.3);
+    }
+
+    let saveStreak = 0; // track consecutive saves for streak commentary
+
+    // ============ DOM ELEMENTS ============
+    const hudEl = document.getElementById('hud');
+    const scoreEl = document.getElementById('score');
+    const heartsEl = [document.getElementById('h1'), document.getElementById('h2'), document.getElementById('h3')];
+    const centerMsg = document.getElementById('centerMessage');
+    const homeScreen = document.getElementById('homeScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const pauseScreen = document.getElementById('pauseScreen');
+    const homeHighScoreEl = document.getElementById('homeHighScore');
+    const finalScoreEl = document.getElementById('finalScore');
+    const finalHighScoreEl = document.getElementById('finalHighScore');
+    const playerNameEl = document.getElementById('playerName');
+    const playBtnEl = document.getElementById('playBtn');
+    const loginScreenEl = document.getElementById('loginScreen');
+    const currentUserLabelEl = document.getElementById('currentUserLabel');
+
+    // Init home screen
+    homeHighScoreEl.textContent = 'High Score: ' + highScore;
+
+    function tryStartGame() {
+        if (!username) return;
+        startGame();
+    }
+
+    // ============ BUTTON HANDLERS ============
+    document.getElementById('playBtn').addEventListener('click', tryStartGame);
+    document.getElementById('playAgainBtn').addEventListener('click', startGame);
+
+    // Touch support for buttons
+    document.getElementById('playBtn').addEventListener('touchend', (e) => { e.preventDefault(); tryStartGame(); });
+    document.getElementById('playAgainBtn').addEventListener('touchend', (e) => { e.preventDefault(); startGame(); });
+
+    function goHome() {
+        gameOverScreen.classList.add('hidden');
+        hudEl.classList.add('hidden');
+        pauseScreen.classList.add('hidden');
+        challengeTargetHUDEl.classList.remove('visible');
+        gameState = 'home';
+        homeScreenEl.classList.remove('hidden');
+        refreshChallengeBadge();
+    }
+    document.getElementById('homeBtn').addEventListener('click', goHome);
+    document.getElementById('homeBtn').addEventListener('touchend', (e) => { e.preventDefault(); goHome(); });
+
+    // ============ AUTH (username + password) ============
+    const FB_BASE = 'https://craft-combat-default-rtdb.firebaseio.com';
+    const FB_USERS = '/goalkeeper/users';
+    const FB_FRIENDS = '/goalkeeper/friends';
+    const AUTH_KEY = 'goalkeeper26Auth';
+    const homeScreenEl = document.getElementById('homeScreen');
+    const loginUsernameEl = document.getElementById('loginUsername');
+    const loginPasswordEl = document.getElementById('loginPassword');
+    const authErrorEl = document.getElementById('authError');
+
+    const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+    function validateUsername(n) {
+        if (!USERNAME_RE.test(n)) return 'Username must be 3-16 letters, numbers, or underscore';
+        return '';
+    }
+    function validatePassword(p) {
+        if (p.length < 4) return 'Password must be at least 4 characters';
+        if (p.length > 32) return 'Password too long';
+        return '';
+    }
+
+    function showAuthError(msg) {
+        authErrorEl.textContent = msg || '';
+    }
+
+    async function fbGet(path) {
+        const r = await fetch(FB_BASE + path + '.json');
+        if (!r.ok) throw new Error('fetch');
+        return r.json();
+    }
+    async function fbPut(path, data) {
+        const r = await fetch(FB_BASE + path + '.json', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!r.ok) throw new Error('put');
+        return r.json();
+    }
+    async function fbPatch(path, data) {
+        const r = await fetch(FB_BASE + path + '.json', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!r.ok) throw new Error('patch');
+        return r.json();
+    }
+    async function fbDelete(path) {
+        await fetch(FB_BASE + path + '.json', { method: 'DELETE' }).catch(() => {});
+    }
+
+    async function signUp(name, pw) {
+        const existing = await fbGet(FB_USERS + '/' + name);
+        if (existing) throw new Error('Username already taken');
+        await fbPut(FB_USERS + '/' + name, { pw: pw, best: 0, updated: Date.now() });
+    }
+
+    async function logIn(name, pw) {
+        const data = await fbGet(FB_USERS + '/' + name);
+        if (!data) throw new Error('User not found');
+        if (data.pw !== pw) throw new Error('Wrong password');
+        return data;
+    }
+
+    function applyLogin(name, pw, userData) {
+        username = name;
+        currentPw = pw;
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ name: name, pw: pw }));
+        if (userData && typeof userData.best === 'number' && userData.best > highScore) {
+            highScore = userData.best;
+            localStorage.setItem('ballCatcherHighScore', highScore);
+        }
+        currentUserLabelEl.textContent = name;
+        homeHighScoreEl.textContent = 'High Score: ' + highScore;
+        loginScreenEl.classList.add('hidden');
+        homeScreenEl.classList.remove('hidden');
+        loadLocalStats();
+        syncStatsFromCloud();
+        refreshChallengeBadge();
+    }
+
+    function logOut() {
+        username = '';
+        currentPw = '';
+        localStorage.removeItem(AUTH_KEY);
+        loginUsernameEl.value = '';
+        loginPasswordEl.value = '';
+        showAuthError('');
+        homeScreenEl.classList.add('hidden');
+        loginScreenEl.classList.remove('hidden');
+    }
+
+    async function handleLogin() {
+        const name = loginUsernameEl.value.trim();
+        const pw = loginPasswordEl.value;
+        showAuthError('');
+        const ue = validateUsername(name); if (ue) { showAuthError(ue); return; }
+        const pe = validatePassword(pw); if (pe) { showAuthError(pe); return; }
+        try {
+            const data = await logIn(name, pw);
+            applyLogin(name, pw, data);
+        } catch (e) { showAuthError(e.message || 'Login failed'); }
+    }
+
+    async function handleSignup() {
+        const name = loginUsernameEl.value.trim();
+        const pw = loginPasswordEl.value;
+        showAuthError('');
+        const ue = validateUsername(name); if (ue) { showAuthError(ue); return; }
+        const pe = validatePassword(pw); if (pe) { showAuthError(pe); return; }
+        try {
+            await signUp(name, pw);
+            applyLogin(name, pw, { best: 0 });
+        } catch (e) { showAuthError(e.message || 'Sign up failed'); }
+    }
+
+    async function tryAutoLogin() {
+        try {
+            const raw = localStorage.getItem(AUTH_KEY);
+            if (!raw) return;
+            const { name, pw } = JSON.parse(raw);
+            if (!name || !pw) return;
+            const data = await logIn(name, pw);
+            applyLogin(name, pw, data);
+        } catch (e) {
+            localStorage.removeItem(AUTH_KEY);
+        }
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    document.getElementById('signupBtn').addEventListener('click', handleSignup);
+    document.getElementById('logoutBtn').addEventListener('click', logOut);
+    loginPasswordEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+    loginUsernameEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginPasswordEl.focus(); });
+
+    async function saveUserBest() {
+        if (!username) return;
+        try { await fbPatch(FB_USERS + '/' + username, { best: highScore, updated: Date.now() }); }
+        catch (e) {}
+    }
+
+    // ============ FRIENDS ============
+    const friendsScreenEl = document.getElementById('friendsScreen');
+    const incomingListEl = document.getElementById('incomingList');
+    const friendsListEl = document.getElementById('friendsList');
+    const addFriendInputEl = document.getElementById('addFriendInput');
+    const addFriendMsgEl = document.getElementById('addFriendMsg');
+
+    function setAddFriendMsg(msg, isError) {
+        addFriendMsgEl.textContent = msg || '';
+        addFriendMsgEl.classList.toggle('error', !!isError);
+    }
+
+    async function sendFriendRequest(targetName) {
+        if (!username) return;
+        if (targetName === username) throw new Error('You can\'t add yourself');
+        const target = await fbGet(FB_USERS + '/' + targetName);
+        if (!target) throw new Error('User not found');
+        const myFriends = await fbGet(FB_FRIENDS + '/' + username + '/list/' + targetName);
+        if (myFriends) throw new Error('Already friends');
+        const incoming = await fbGet(FB_FRIENDS + '/' + username + '/incoming/' + targetName);
+        if (incoming) {
+            await acceptFriendRequest(targetName);
+            return 'Accepted existing request';
+        }
+        await fbPut(FB_FRIENDS + '/' + username + '/outgoing/' + targetName, true);
+        await fbPut(FB_FRIENDS + '/' + targetName + '/incoming/' + username, true);
+        return 'Request sent';
+    }
+
+    async function acceptFriendRequest(fromName) {
+        await fbPut(FB_FRIENDS + '/' + username + '/list/' + fromName, true);
+        await fbPut(FB_FRIENDS + '/' + fromName + '/list/' + username, true);
+        await fbDelete(FB_FRIENDS + '/' + username + '/incoming/' + fromName);
+        await fbDelete(FB_FRIENDS + '/' + fromName + '/outgoing/' + username);
+        statsOnFriendAdded();
+    }
+
+    async function declineFriendRequest(fromName) {
+        await fbDelete(FB_FRIENDS + '/' + username + '/incoming/' + fromName);
+        await fbDelete(FB_FRIENDS + '/' + fromName + '/outgoing/' + username);
+    }
+
+    async function removeFriend(friendName) {
+        await fbDelete(FB_FRIENDS + '/' + username + '/list/' + friendName);
+        await fbDelete(FB_FRIENDS + '/' + friendName + '/list/' + username);
+    }
+
+    async function loadFriends() {
+        if (!username) return { list: {}, incoming: {} };
+        const data = await fbGet(FB_FRIENDS + '/' + username);
+        return {
+            list: (data && data.list) || {},
+            incoming: (data && data.incoming) || {}
+        };
+    }
+
+    async function renderFriends() {
+        incomingListEl.innerHTML = '<div class="friends-empty">Loading…</div>';
+        friendsListEl.innerHTML = '<div class="friends-empty">Loading…</div>';
+        let data;
+        try { data = await loadFriends(); }
+        catch (e) {
+            incomingListEl.innerHTML = '<div class="friends-empty">Offline</div>';
+            friendsListEl.innerHTML = '<div class="friends-empty">Offline</div>';
+            return;
+        }
+
+        // Incoming
+        const incomingNames = Object.keys(data.incoming);
+        if (incomingNames.length === 0) {
+            incomingListEl.innerHTML = '<div class="friends-empty">No pending requests</div>';
+        } else {
+            incomingListEl.innerHTML = '';
+            incomingNames.forEach(n => {
+                const row = document.createElement('div');
+                row.className = 'friend-row';
+                const nameEl = document.createElement('span');
+                nameEl.className = 'friend-name';
+                nameEl.textContent = n;
+                const accept = document.createElement('button');
+                accept.className = 'friend-action accept';
+                accept.textContent = 'Accept';
+                accept.addEventListener('click', async () => {
+                    accept.disabled = true;
+                    await acceptFriendRequest(n);
+                    renderFriends();
+                });
+                const decline = document.createElement('button');
+                decline.className = 'friend-action decline';
+                decline.textContent = 'Decline';
+                decline.addEventListener('click', async () => {
+                    decline.disabled = true;
+                    await declineFriendRequest(n);
+                    renderFriends();
+                });
+                row.appendChild(nameEl);
+                row.appendChild(accept);
+                row.appendChild(decline);
+                incomingListEl.appendChild(row);
+            });
+        }
+
+        // Friends list — fetch each friend's best score
+        const friendNames = Object.keys(data.list);
+        if (friendNames.length === 0) {
+            friendsListEl.innerHTML = '<div class="friends-empty">No friends yet</div>';
+        } else {
+            friendsListEl.innerHTML = '';
+            const rows = friendNames.map(n => {
+                const row = document.createElement('div');
+                row.className = 'friend-row';
+                const nameEl = document.createElement('span');
+                nameEl.className = 'friend-name';
+                nameEl.textContent = n;
+                const scoreEl = document.createElement('span');
+                scoreEl.className = 'friend-score';
+                scoreEl.textContent = '—';
+                const ch = document.createElement('button');
+                ch.className = 'friend-action challenge';
+                ch.textContent = 'Challenge';
+                ch.addEventListener('click', () => openChallengeModal(n));
+                const h2h = document.createElement('button');
+                h2h.className = 'friend-action h2h-btn';
+                h2h.textContent = 'H2H';
+                h2h.addEventListener('click', () => startH2HAsHost(n));
+                const rem = document.createElement('button');
+                rem.className = 'friend-action remove';
+                rem.textContent = 'Remove';
+                rem.addEventListener('click', async () => {
+                    rem.disabled = true;
+                    await removeFriend(n);
+                    renderFriends();
+                });
+                row.appendChild(nameEl);
+                row.appendChild(scoreEl);
+                row.appendChild(ch);
+                row.appendChild(h2h);
+                row.appendChild(rem);
+                friendsListEl.appendChild(row);
+                return { name: n, scoreEl };
+            });
+            // Fetch best scores in parallel
+            Promise.all(rows.map(r => fbGet(FB_USERS + '/' + r.name).catch(() => null)))
+                .then(results => {
+                    results.forEach((u, i) => {
+                        rows[i].scoreEl.textContent = (u && typeof u.best === 'number') ? u.best : '—';
+                    });
+                });
+        }
+    }
+
+    async function handleAddFriend() {
+        const target = addFriendInputEl.value.trim();
+        setAddFriendMsg('');
+        const err = validateUsername(target);
+        if (err) { setAddFriendMsg(err, true); return; }
+        try {
+            const msg = await sendFriendRequest(target);
+            setAddFriendMsg(msg || 'Request sent');
+            addFriendInputEl.value = '';
+            renderFriends();
+        } catch (e) { setAddFriendMsg(e.message || 'Failed', true); }
+    }
+
+    document.getElementById('friendsBtn').addEventListener('click', () => {
+        friendsScreenEl.classList.add('visible');
+        renderFriends();
+    });
+    document.getElementById('friendsCloseBtn').addEventListener('click', () => {
+        friendsScreenEl.classList.remove('visible');
+    });
+    document.getElementById('addFriendBtn').addEventListener('click', handleAddFriend);
+    addFriendInputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAddFriend(); });
+
+    // ============ CHALLENGES (async) ============
+    const FB_CHALLENGES = '/goalkeeper/challenges';
+    const FB_USER_CH = '/goalkeeper/userChallenges';
+    const challengesScreenEl = document.getElementById('challengesScreen');
+    const challengesIncomingEl = document.getElementById('challengesIncoming');
+    const challengesOutgoingEl = document.getElementById('challengesOutgoing');
+    const challengeModalEl = document.getElementById('challengeModal');
+    const challengeTargetNameEl = document.getElementById('challengeTargetName');
+    const challengeScoreInputEl = document.getElementById('challengeScoreInput');
+    const challengeErrorEl = document.getElementById('challengeError');
+    const challengeTargetHUDEl = document.getElementById('challengeTargetHUD');
+    const chBadgeEl = document.getElementById('chBadge');
+    let challengeContext = null; // { id, from, target } while playing a challenge
+    let pendingChallengeTarget = null; // name of friend being challenged (modal state)
+
+    async function fbPost(path, data) {
+        const r = await fetch(FB_BASE + path + '.json', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!r.ok) throw new Error('post');
+        return r.json(); // returns { name: "<id>" }
+    }
+
+    function openChallengeModal(friendName) {
+        pendingChallengeTarget = friendName;
+        challengeTargetNameEl.textContent = friendName;
+        challengeScoreInputEl.value = Math.max(1, highScore);
+        challengeErrorEl.textContent = '';
+        challengeModalEl.classList.add('visible');
+        setTimeout(() => challengeScoreInputEl.focus(), 50);
+    }
+    function closeChallengeModal() {
+        challengeModalEl.classList.remove('visible');
+        pendingChallengeTarget = null;
+    }
+
+    async function sendChallenge(toName, target) {
+        const entry = {
+            from: username,
+            to: toName,
+            target: target,
+            toScore: null,
+            status: 'pending',
+            created: Date.now(),
+            completed: null
+        };
+        const res = await fbPost(FB_CHALLENGES, entry);
+        const id = res.name;
+        await fbPut(FB_USER_CH + '/' + toName + '/incoming/' + id, true);
+        await fbPut(FB_USER_CH + '/' + username + '/outgoing/' + id, true);
+        return id;
+    }
+
+    async function handleChallengeSend() {
+        challengeErrorEl.textContent = '';
+        const target = parseInt(challengeScoreInputEl.value, 10);
+        if (!Number.isFinite(target) || target < 1) {
+            challengeErrorEl.textContent = 'Enter a target score of 1 or more';
+            return;
+        }
+        if (target > 999) {
+            challengeErrorEl.textContent = 'Max target is 999';
+            return;
+        }
+        const toName = pendingChallengeTarget;
+        if (!toName) { closeChallengeModal(); return; }
+        try {
+            await sendChallenge(toName, target);
+            closeChallengeModal();
+            setAddFriendMsg('Challenge sent to ' + toName + '!');
+        } catch (e) {
+            challengeErrorEl.textContent = 'Failed to send challenge';
+        }
+    }
+
+    async function fetchUserChallenges() {
+        if (!username) return { incoming: {}, outgoing: {} };
+        const data = await fbGet(FB_USER_CH + '/' + username);
+        return {
+            incoming: (data && data.incoming) || {},
+            outgoing: (data && data.outgoing) || {}
+        };
+    }
+
+    async function fetchChallengesById(ids) {
+        return Promise.all(ids.map(id =>
+            fbGet(FB_CHALLENGES + '/' + id).then(c => c ? { id, ...c } : null).catch(() => null)
+        ));
+    }
+
+    async function dismissIncomingChallenge(id) {
+        await fbDelete(FB_USER_CH + '/' + username + '/incoming/' + id);
+    }
+    async function dismissOutgoingChallenge(id) {
+        await fbDelete(FB_USER_CH + '/' + username + '/outgoing/' + id);
+    }
+
+    function makeChallengeResultLabel(challenge, perspective) {
+        // perspective: 'incoming' (I was challenged) or 'outgoing' (I sent it)
+        const t = challenge.target;
+        const s = challenge.toScore;
+        if (challenge.status !== 'complete' || s == null) return null;
+        const beat = s > t;
+        if (perspective === 'incoming') {
+            return beat
+                ? { text: 'You beat the target! (' + s + ' vs ' + t + ')', cls: 'win' }
+                : { text: 'You fell short (' + s + ' vs ' + t + ')', cls: 'loss' };
+        }
+        return beat
+            ? { text: challenge.to + ' beat your ' + t + ' with ' + s, cls: 'loss' }
+            : { text: challenge.to + ' tried but got ' + s + ' / ' + t, cls: 'win' };
+    }
+
+    function renderIncomingChallenge(ch) {
+        const row = document.createElement('div');
+        row.className = 'challenge-row';
+        const header = document.createElement('div');
+        header.className = 'ch-header';
+        const from = document.createElement('span');
+        from.className = 'ch-from';
+        from.textContent = 'From ' + ch.from;
+        const tgt = document.createElement('span');
+        tgt.className = 'ch-target';
+        tgt.textContent = 'Target: ' + ch.target;
+        header.appendChild(from);
+        header.appendChild(tgt);
+        row.appendChild(header);
+
+        const result = makeChallengeResultLabel(ch, 'incoming');
+        if (result) {
+            const r = document.createElement('div');
+            r.className = 'ch-result ' + result.cls;
+            r.textContent = result.text;
+            row.appendChild(r);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'ch-actions';
+        if (ch.status === 'pending') {
+            const play = document.createElement('button');
+            play.className = 'ch-action-btn play';
+            play.textContent = 'Play';
+            play.addEventListener('click', () => startChallengeGame(ch));
+            actions.appendChild(play);
+        }
+        const dismiss = document.createElement('button');
+        dismiss.className = 'ch-action-btn dismiss';
+        dismiss.textContent = 'Dismiss';
+        dismiss.addEventListener('click', async () => {
+            dismiss.disabled = true;
+            await dismissIncomingChallenge(ch.id);
+            renderChallenges();
+        });
+        actions.appendChild(dismiss);
+        row.appendChild(actions);
+        return row;
+    }
+
+    function renderOutgoingChallenge(ch) {
+        const row = document.createElement('div');
+        row.className = 'challenge-row';
+        const header = document.createElement('div');
+        header.className = 'ch-header';
+        const to = document.createElement('span');
+        to.className = 'ch-from';
+        to.textContent = 'To ' + ch.to;
+        const tgt = document.createElement('span');
+        tgt.className = 'ch-target';
+        tgt.textContent = 'Target: ' + ch.target;
+        header.appendChild(to);
+        header.appendChild(tgt);
+        row.appendChild(header);
+
+        const result = makeChallengeResultLabel(ch, 'outgoing');
+        if (result) {
+            const r = document.createElement('div');
+            r.className = 'ch-result ' + result.cls;
+            r.textContent = result.text;
+            row.appendChild(r);
+        } else {
+            const r = document.createElement('div');
+            r.className = 'ch-result pending';
+            r.textContent = 'Waiting for ' + ch.to + ' to play…';
+            row.appendChild(r);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'ch-actions';
+        const dismiss = document.createElement('button');
+        dismiss.className = 'ch-action-btn dismiss';
+        dismiss.textContent = 'Dismiss';
+        dismiss.addEventListener('click', async () => {
+            dismiss.disabled = true;
+            await dismissOutgoingChallenge(ch.id);
+            renderChallenges();
+        });
+        actions.appendChild(dismiss);
+        row.appendChild(actions);
+        return row;
+    }
+
+    async function renderChallenges() {
+        challengesIncomingEl.innerHTML = '<div class="friends-empty">Loading…</div>';
+        challengesOutgoingEl.innerHTML = '<div class="friends-empty">Loading…</div>';
+        let refs;
+        try { refs = await fetchUserChallenges(); }
+        catch (e) {
+            challengesIncomingEl.innerHTML = '<div class="friends-empty">Offline</div>';
+            challengesOutgoingEl.innerHTML = '<div class="friends-empty">Offline</div>';
+            return;
+        }
+        const incomingIds = Object.keys(refs.incoming);
+        const outgoingIds = Object.keys(refs.outgoing);
+        const [incoming, outgoing] = await Promise.all([
+            fetchChallengesById(incomingIds),
+            fetchChallengesById(outgoingIds)
+        ]);
+        const incomingClean = incoming.filter(x => x);
+        const outgoingClean = outgoing.filter(x => x);
+        incomingClean.sort((a, b) => (b.created || 0) - (a.created || 0));
+        outgoingClean.sort((a, b) => (b.created || 0) - (a.created || 0));
+
+        if (incomingClean.length === 0) {
+            challengesIncomingEl.innerHTML = '<div class="friends-empty">No incoming challenges</div>';
+        } else {
+            challengesIncomingEl.innerHTML = '';
+            incomingClean.forEach(c => challengesIncomingEl.appendChild(renderIncomingChallenge(c)));
+        }
+        if (outgoingClean.length === 0) {
+            challengesOutgoingEl.innerHTML = '<div class="friends-empty">No sent challenges</div>';
+        } else {
+            challengesOutgoingEl.innerHTML = '';
+            outgoingClean.forEach(c => challengesOutgoingEl.appendChild(renderOutgoingChallenge(c)));
+        }
+        updateChallengeBadgeFromData(incomingClean);
+    }
+
+    function updateChallengeBadgeFromData(incoming) {
+        const pendingCount = incoming.filter(c => c.status === 'pending').length;
+        if (pendingCount > 0) {
+            chBadgeEl.textContent = pendingCount;
+            chBadgeEl.classList.add('visible');
+        } else {
+            chBadgeEl.classList.remove('visible');
+        }
+    }
+
+    async function refreshChallengeBadge() {
+        try {
+            const refs = await fetchUserChallenges();
+            const incomingIds = Object.keys(refs.incoming);
+            let count = 0;
+            if (incomingIds.length > 0) {
+                const incoming = await fetchChallengesById(incomingIds);
+                count += incoming.filter(x => x && x.status === 'pending').length;
+            }
+            try {
+                const h2hInvData = await fbGet(FB_USER_MATCHES + '/' + username + '/invites');
+                if (h2hInvData) count += Object.keys(h2hInvData).length;
+            } catch (e) {}
+            if (count > 0) {
+                chBadgeEl.textContent = count;
+                chBadgeEl.classList.add('visible');
+            } else {
+                chBadgeEl.classList.remove('visible');
+            }
+        } catch (e) {}
+    }
+
+    function startChallengeGame(ch) {
+        challengesScreenEl.classList.remove('visible');
+        challengeContext = { id: ch.id, from: ch.from, target: ch.target };
+        challengeTargetHUDEl.textContent = '⚔ Beat ' + ch.from + ': ' + ch.target;
+        challengeTargetHUDEl.classList.add('visible');
+        startGame();
+    }
+
+    async function recordChallengeResult(id, finalScore) {
+        try {
+            await fbPatch(FB_CHALLENGES + '/' + id, {
+                toScore: finalScore,
+                status: 'complete',
+                completed: Date.now()
+            });
+        } catch (e) {}
+    }
+
+    document.getElementById('challengesBtn').addEventListener('click', () => {
+        challengesScreenEl.classList.add('visible');
+        renderChallenges();
+        renderH2HInvites();
+    });
+    document.getElementById('challengesCloseBtn').addEventListener('click', () => {
+        challengesScreenEl.classList.remove('visible');
+    });
+    document.getElementById('challengeCancelBtn').addEventListener('click', closeChallengeModal);
+    document.getElementById('challengeSendBtn').addEventListener('click', handleChallengeSend);
+    challengeScoreInputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleChallengeSend(); });
+
+    // ============ HEAD-TO-HEAD ============
+    const FB_MATCHES = '/goalkeeper/matches';
+    const FB_USER_MATCHES = '/goalkeeper/userMatches';
+    const h2hOverlayEl = document.getElementById('h2hOverlay');
+    const h2hContentEl = document.getElementById('h2hContent');
+    const h2hInvitesEl = document.getElementById('h2hInvites');
+    const h2hOpponentHUDEl = document.getElementById('h2hOpponentHUD');
+
+    let h2h = null; // { matchId, role: 'host'|'guest', opponent: name, seed, state, lastScoreSent }
+    let h2hRng = null;
+    let h2hPollTimer = null;
+    let h2hCountdownTimer = null;
+    let h2hLastScoreSent = -1;
+    let h2hLastDoneSent = false;
+
+    function mulberry32(seed) {
+        let a = seed >>> 0;
+        return function () {
+            a = (a + 0x6D2B79F5) >>> 0;
+            let t = a;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return (((t ^ (t >>> 14)) >>> 0)) / 4294967296;
+        };
+    }
+
+    function spawnRng() { return h2hRng ? h2hRng() : Math.random(); }
+
+    function showH2HOverlay(html) {
+        h2hContentEl.innerHTML = html;
+        h2hOverlayEl.classList.add('visible');
+    }
+    function hideH2HOverlay() { h2hOverlayEl.classList.remove('visible'); }
+
+    function renderH2HWaiting(oppName) {
+        showH2HOverlay(
+            '<h2>H2H vs ' + oppName + '</h2>' +
+            '<div class="h2h-sub">Waiting for ' + oppName + ' to join…</div>' +
+            '<div class="h2h-countdown">⏳</div>' +
+            '<div class="h2h-actions"><button class="ch-action-btn dismiss" id="h2hCancelBtn">Cancel</button></div>'
+        );
+        const btn = document.getElementById('h2hCancelBtn');
+        if (btn) btn.addEventListener('click', leaveH2HMatch);
+    }
+
+    function renderH2HCountdown(secs, myName, oppName) {
+        showH2HOverlay(
+            '<h2>Get Ready!</h2>' +
+            '<div class="h2h-players">' +
+                '<div class="h2h-player you">' + myName + ' <div class="h2h-score">YOU</div></div>' +
+                '<div class="h2h-vs">VS</div>' +
+                '<div class="h2h-player">' + oppName + '</div>' +
+            '</div>' +
+            '<div class="h2h-countdown">' + secs + '</div>'
+        );
+    }
+
+    function renderH2HResult(match) {
+        const mine = (h2h && h2h.role === 'host') ? match.hostScore : match.guestScore;
+        const theirs = (h2h && h2h.role === 'host') ? match.guestScore : match.hostScore;
+        const mineName = (h2h && h2h.role === 'host') ? match.host : match.guest;
+        const theirName = (h2h && h2h.role === 'host') ? match.guest : match.host;
+        let verdict;
+        if (mine > theirs) { verdict = '<div class="h2h-result-winner">🏆 You Win!</div>'; statsOnH2HWon(); }
+        else if (theirs > mine) verdict = '<div class="h2h-result-loser">' + theirName + ' wins</div>';
+        else verdict = '<div class="h2h-result-tie">🤝 Tie!</div>';
+        showH2HOverlay(
+            '<h2>Match Over</h2>' +
+            verdict +
+            '<div class="h2h-players">' +
+                '<div class="h2h-player you">' + mineName + '<div class="h2h-score">' + (mine || 0) + '</div></div>' +
+                '<div class="h2h-vs">VS</div>' +
+                '<div class="h2h-player">' + theirName + '<div class="h2h-score">' + (theirs || 0) + '</div></div>' +
+            '</div>' +
+            '<div class="h2h-actions"><button class="ch-action-btn play" id="h2hDoneBtn">Back to Home</button></div>'
+        );
+        const btn = document.getElementById('h2hDoneBtn');
+        if (btn) btn.addEventListener('click', async () => {
+            hideH2HOverlay();
+            h2hOpponentHUDEl.classList.remove('visible');
+            if (h2h && h2h.matchId) {
+                try { await fbDelete(FB_USER_MATCHES + '/' + username + '/active'); } catch (e) {}
+            }
+            h2h = null;
+            h2hRng = null;
+            gameState = 'home';
+            gameOverScreen.classList.add('hidden');
+            hudEl.classList.add('hidden');
+            homeScreenEl.classList.remove('hidden');
+            refreshChallengeBadge();
+        });
+    }
+
+    async function leaveH2HMatch() {
+        stopH2HPolling();
+        hideH2HOverlay();
+        if (h2h && h2h.matchId) {
+            try { await fbDelete(FB_USER_MATCHES + '/' + username + '/active'); } catch (e) {}
+            if (h2h.opponent) {
+                try { await fbDelete(FB_USER_MATCHES + '/' + h2h.opponent + '/invites/' + h2h.matchId); } catch (e) {}
+            }
+        }
+        h2h = null;
+        h2hRng = null;
+        h2hOpponentHUDEl.classList.remove('visible');
+    }
+
+    async function startH2HAsHost(friendName) {
+        if (!username) return;
+        const seed = Math.floor(Math.random() * 0xFFFFFFFF);
+        const entry = {
+            host: username,
+            guest: friendName,
+            seed: seed,
+            status: 'waiting',
+            hostScore: 0,
+            guestScore: 0,
+            hostDone: false,
+            guestDone: false,
+            startAt: 0,
+            created: Date.now(),
+            completed: null
+        };
+        try {
+            const res = await fbPost(FB_MATCHES, entry);
+            const id = res.name;
+            await fbPut(FB_USER_MATCHES + '/' + username + '/active', id);
+            await fbPut(FB_USER_MATCHES + '/' + friendName + '/invites/' + id, true);
+            h2h = { matchId: id, role: 'host', opponent: friendName, seed: seed, state: 'waiting' };
+            // Close friends screen if open
+            friendsScreenEl.classList.remove('visible');
+            renderH2HWaiting(friendName);
+            startH2HPolling();
+        } catch (e) {
+            alert('Failed to create H2H match');
+        }
+    }
+
+    async function acceptH2HInvite(matchId) {
+        try {
+            const match = await fbGet(FB_MATCHES + '/' + matchId);
+            if (!match) { alert('Match no longer exists'); return; }
+            const startAt = Date.now() + 4000;
+            await fbPatch(FB_MATCHES + '/' + matchId, {
+                status: 'countdown',
+                startAt: startAt
+            });
+            await fbPut(FB_USER_MATCHES + '/' + username + '/active', matchId);
+            await fbDelete(FB_USER_MATCHES + '/' + username + '/invites/' + matchId);
+            h2h = { matchId: matchId, role: 'guest', opponent: match.host, seed: match.seed, state: 'countdown' };
+            challengesScreenEl.classList.remove('visible');
+            renderH2HCountdown(Math.ceil((startAt - Date.now()) / 1000), username, match.host);
+            startH2HPolling();
+        } catch (e) {
+            alert('Failed to join match');
+        }
+    }
+
+    async function declineH2HInvite(matchId) {
+        try {
+            await fbDelete(FB_USER_MATCHES + '/' + username + '/invites/' + matchId);
+            try { await fbPatch(FB_MATCHES + '/' + matchId, { status: 'declined' }); } catch (e) {}
+            renderChallenges();
+        } catch (e) {}
+    }
+
+    function startH2HPolling() {
+        stopH2HPolling();
+        h2hPollTimer = setInterval(pollH2H, 500);
+        pollH2H();
+    }
+    function stopH2HPolling() {
+        if (h2hPollTimer) { clearInterval(h2hPollTimer); h2hPollTimer = null; }
+        if (h2hCountdownTimer) { clearInterval(h2hCountdownTimer); h2hCountdownTimer = null; }
+    }
+
+    async function pollH2H() {
+        if (!h2h) return;
+        let match;
+        try { match = await fbGet(FB_MATCHES + '/' + h2h.matchId); }
+        catch (e) { return; }
+        if (!match) return;
+
+        // Host waits for guest to accept → status becomes 'countdown'
+        if (h2h.role === 'host' && h2h.state === 'waiting' && match.status === 'countdown') {
+            h2h.state = 'countdown';
+            beginH2HCountdown(match.startAt);
+        }
+        // Both: live match started
+        if (h2h.state === 'countdown' && match.status === 'live') {
+            h2h.state = 'live';
+            startH2HPlay(match.seed);
+        }
+        // Live: update opponent score
+        if (h2h.state === 'live' && match.status === 'live') {
+            const oppScore = (h2h.role === 'host') ? match.guestScore : match.hostScore;
+            updateOpponentHUD(h2h.opponent, oppScore || 0);
+            // If both done, complete
+            if (match.hostDone && match.guestDone) {
+                if (match.status !== 'complete') {
+                    try { await fbPatch(FB_MATCHES + '/' + h2h.matchId, { status: 'complete', completed: Date.now() }); } catch (e) {}
+                }
+                h2h.state = 'complete';
+                stopH2HPolling();
+                renderH2HResult(match);
+                h2hOpponentHUDEl.classList.remove('visible');
+            }
+        }
+        // If server marked complete
+        if (match.status === 'complete' && h2h.state !== 'complete') {
+            h2h.state = 'complete';
+            stopH2HPolling();
+            renderH2HResult(match);
+            h2hOpponentHUDEl.classList.remove('visible');
+        }
+    }
+
+    function beginH2HCountdown(startAt) {
+        const myName = username;
+        const oppName = h2h.opponent;
+        const tick = async () => {
+            const remaining = startAt - Date.now();
+            const secs = Math.max(0, Math.ceil(remaining / 1000));
+            renderH2HCountdown(secs || 'GO!', myName, oppName);
+            if (remaining <= 0) {
+                clearInterval(h2hCountdownTimer);
+                h2hCountdownTimer = null;
+                if (h2h && h2h.role === 'host') {
+                    try { await fbPatch(FB_MATCHES + '/' + h2h.matchId, { status: 'live' }); } catch (e) {}
+                }
+                // pollH2H will pick up status='live' and call startH2HPlay
+            }
+        };
+        tick();
+        h2hCountdownTimer = setInterval(tick, 250);
+    }
+
+    function updateOpponentHUD(name, oppScore) {
+        h2hOpponentHUDEl.innerHTML = '<div class="h2h-name">' + name + '</div>' + oppScore;
+        h2hOpponentHUDEl.classList.add('visible');
+    }
+
+    function startH2HPlay(seed) {
+        hideH2HOverlay();
+        h2hRng = mulberry32(seed);
+        h2hLastScoreSent = -1;
+        h2hLastDoneSent = false;
+        updateOpponentHUD(h2h.opponent, 0);
+        startGame();
+    }
+
+    async function pushH2HScore(s) {
+        if (!h2h || !h2h.matchId) return;
+        const field = (h2h.role === 'host') ? 'hostScore' : 'guestScore';
+        const payload = {}; payload[field] = s;
+        try { await fbPatch(FB_MATCHES + '/' + h2h.matchId, payload); } catch (e) {}
+    }
+
+    async function pushH2HDone(finalScore) {
+        if (!h2h || !h2h.matchId) return;
+        const scoreField = (h2h.role === 'host') ? 'hostScore' : 'guestScore';
+        const doneField = (h2h.role === 'host') ? 'hostDone' : 'guestDone';
+        const payload = {}; payload[scoreField] = finalScore; payload[doneField] = true;
+        try { await fbPatch(FB_MATCHES + '/' + h2h.matchId, payload); } catch (e) {}
+    }
+
+    // Render H2H invites in Challenges screen
+    async function renderH2HInvites() {
+        h2hInvitesEl.innerHTML = '<div class="friends-empty">Loading…</div>';
+        let data;
+        try { data = await fbGet(FB_USER_MATCHES + '/' + username + '/invites'); }
+        catch (e) { h2hInvitesEl.innerHTML = '<div class="friends-empty">Offline</div>'; return; }
+        const ids = data ? Object.keys(data) : [];
+        if (ids.length === 0) {
+            h2hInvitesEl.innerHTML = '<div class="friends-empty">No H2H invites</div>';
+            return;
+        }
+        const matches = await Promise.all(ids.map(id =>
+            fbGet(FB_MATCHES + '/' + id).then(m => m ? { id, ...m } : null).catch(() => null)
+        ));
+        const valid = matches.filter(m => m && m.status === 'waiting');
+        if (valid.length === 0) {
+            h2hInvitesEl.innerHTML = '<div class="friends-empty">No H2H invites</div>';
+            // Clean up stale invites
+            ids.forEach(id => fbDelete(FB_USER_MATCHES + '/' + username + '/invites/' + id));
+            return;
+        }
+        h2hInvitesEl.innerHTML = '';
+        valid.forEach(m => {
+            const row = document.createElement('div');
+            row.className = 'challenge-row';
+            const header = document.createElement('div');
+            header.className = 'ch-header';
+            const from = document.createElement('span');
+            from.className = 'ch-from';
+            from.textContent = 'From ' + m.host;
+            const tgt = document.createElement('span');
+            tgt.className = 'ch-target';
+            tgt.textContent = 'Head-to-Head';
+            header.appendChild(from);
+            header.appendChild(tgt);
+            row.appendChild(header);
+            const actions = document.createElement('div');
+            actions.className = 'ch-actions';
+            const join = document.createElement('button');
+            join.className = 'ch-action-btn play';
+            join.textContent = 'Join';
+            join.addEventListener('click', () => acceptH2HInvite(m.id));
+            const dec = document.createElement('button');
+            dec.className = 'ch-action-btn dismiss';
+            dec.textContent = 'Decline';
+            dec.addEventListener('click', () => declineH2HInvite(m.id));
+            actions.appendChild(join);
+            actions.appendChild(dec);
+            row.appendChild(actions);
+            h2hInvitesEl.appendChild(row);
+        });
+    }
+
+    // ============ ACHIEVEMENTS ============
+    const ACH_DEFS = [
+        { id: 'first_save',       icon: '🥅', name: 'First Save',         desc: 'Save your first ball',         check: s => s.totalSaves >= 1 },
+        { id: 'saves_10',         icon: '🧤', name: 'On a Roll',           desc: 'Score 10 in one game',         check: s => s.bestGameScore >= 10 },
+        { id: 'saves_25',         icon: '⭐', name: 'Wall of Defense',     desc: 'Score 25 in one game',         check: s => s.bestGameScore >= 25 },
+        { id: 'saves_50',         icon: '🏅', name: 'Unstoppable',         desc: 'Score 50 in one game',         check: s => s.bestGameScore >= 50 },
+        { id: 'streak_5',         icon: '🔥', name: 'Hot Streak',          desc: '5 saves in a row',             check: s => s.bestStreak >= 5 },
+        { id: 'streak_10',        icon: '💥', name: 'Untouchable',         desc: '10 saves in a row',            check: s => s.bestStreak >= 10 },
+        { id: 'first_game',       icon: '🎮', name: 'Welcome',             desc: 'Play your first game',         check: s => s.gamesPlayed >= 1 },
+        { id: 'games_10',         icon: '🎯', name: 'Regular',             desc: 'Play 10 games',                check: s => s.gamesPlayed >= 10 },
+        { id: 'games_50',         icon: '🏟️', name: 'Veteran',             desc: 'Play 50 games',                check: s => s.gamesPlayed >= 50 },
+        { id: 'first_friend',     icon: '🤝', name: 'Making Friends',      desc: 'Add your first friend',        check: s => s.friendsAdded >= 1 },
+        { id: 'challenge_win',    icon: '⚔️', name: 'Challenger',          desc: 'Beat a friend\'s challenge',    check: s => s.challengesWon >= 1 },
+        { id: 'challenges_5',     icon: '👑', name: 'Challenge Master',    desc: 'Beat 5 challenges',            check: s => s.challengesWon >= 5 },
+        { id: 'h2h_win',          icon: '🥇', name: 'Head-to-Head Win',    desc: 'Win an H2H match',             check: s => s.h2hWon >= 1 },
+        { id: 'h2h_5',            icon: '🏆', name: 'H2H Champion',         desc: 'Win 5 H2H matches',            check: s => s.h2hWon >= 5 }
+    ];
+
+    let userStats = {
+        gamesPlayed: 0, totalSaves: 0, bestGameScore: 0, bestStreak: 0,
+        friendsAdded: 0, challengesWon: 0, h2hWon: 0
+    };
+    let unlockedAchievements = {}; // { id: timestamp }
+
+    function statsKey() { return 'goalkeeper26Stats_' + (username || '_anon'); }
+    function achKey() { return 'goalkeeper26Ach_' + (username || '_anon'); }
+
+    function loadLocalStats() {
+        try {
+            const s = JSON.parse(localStorage.getItem(statsKey()) || '{}');
+            userStats = Object.assign({
+                gamesPlayed: 0, totalSaves: 0, bestGameScore: 0, bestStreak: 0,
+                friendsAdded: 0, challengesWon: 0, h2hWon: 0
+            }, s);
+            const a = JSON.parse(localStorage.getItem(achKey()) || '{}');
+            unlockedAchievements = a || {};
+        } catch (e) {
+            userStats = { gamesPlayed: 0, totalSaves: 0, bestGameScore: 0, bestStreak: 0, friendsAdded: 0, challengesWon: 0, h2hWon: 0 };
+            unlockedAchievements = {};
+        }
+    }
+
+    function saveLocalStats() {
+        localStorage.setItem(statsKey(), JSON.stringify(userStats));
+        localStorage.setItem(achKey(), JSON.stringify(unlockedAchievements));
+    }
+
+    async function syncStatsFromCloud() {
+        if (!username) return;
+        try {
+            const data = await fbGet(FB_USERS + '/' + username);
+            if (data && data.stats) {
+                Object.keys(userStats).forEach(k => {
+                    if (typeof data.stats[k] === 'number' && data.stats[k] > userStats[k]) {
+                        userStats[k] = data.stats[k];
+                    }
+                });
+            }
+            if (data && data.achievements) {
+                Object.keys(data.achievements).forEach(id => {
+                    if (!unlockedAchievements[id]) unlockedAchievements[id] = data.achievements[id];
+                });
+            }
+            saveLocalStats();
+            checkAchievements();
+        } catch (e) {}
+    }
+
+    async function pushStatsToCloud() {
+        if (!username) return;
+        try {
+            await fbPatch(FB_USERS + '/' + username, {
+                stats: userStats,
+                achievements: unlockedAchievements,
+                updated: Date.now()
+            });
+        } catch (e) {}
+    }
+
+    const achievementToastEl = document.getElementById('achievementToast');
+    const toastIconEl = document.getElementById('toastIcon');
+    const toastNameEl = document.getElementById('toastName');
+    let toastQueue = [];
+    let toastActive = false;
+
+    function showAchievementToast(def) {
+        toastQueue.push(def);
+        if (!toastActive) processToastQueue();
+    }
+    function processToastQueue() {
+        if (toastQueue.length === 0) { toastActive = false; return; }
+        toastActive = true;
+        const def = toastQueue.shift();
+        toastIconEl.textContent = def.icon;
+        toastNameEl.textContent = def.name;
+        achievementToastEl.classList.add('visible');
+        setTimeout(() => {
+            achievementToastEl.classList.remove('visible');
+            setTimeout(processToastQueue, 400);
+        }, 2500);
+    }
+
+    function checkAchievements() {
+        let unlockedNow = false;
+        ACH_DEFS.forEach(def => {
+            if (!unlockedAchievements[def.id] && def.check(userStats)) {
+                unlockedAchievements[def.id] = Date.now();
+                unlockedNow = true;
+                showAchievementToast(def);
+            }
+        });
+        if (unlockedNow) {
+            saveLocalStats();
+            pushStatsToCloud();
+        }
+    }
+
+    // Stat update helpers — call these from game events
+    function statsOnGameStart() {
+        userStats.gamesPlayed = (userStats.gamesPlayed || 0) + 1;
+        saveLocalStats();
+        checkAchievements();
+    }
+    function statsOnSave() {
+        userStats.totalSaves = (userStats.totalSaves || 0) + 1;
+        if (saveStreak > userStats.bestStreak) userStats.bestStreak = saveStreak;
+        saveLocalStats();
+        checkAchievements();
+    }
+    function statsOnGameEnd(finalScore) {
+        if (finalScore > userStats.bestGameScore) userStats.bestGameScore = finalScore;
+        saveLocalStats();
+        checkAchievements();
+        pushStatsToCloud();
+    }
+    function statsOnFriendAdded() {
+        userStats.friendsAdded = (userStats.friendsAdded || 0) + 1;
+        saveLocalStats();
+        checkAchievements();
+    }
+    function statsOnChallengeWon() {
+        userStats.challengesWon = (userStats.challengesWon || 0) + 1;
+        saveLocalStats();
+        checkAchievements();
+    }
+    function statsOnH2HWon() {
+        userStats.h2hWon = (userStats.h2hWon || 0) + 1;
+        saveLocalStats();
+        checkAchievements();
+    }
+
+    // Render achievements screen
+    const achievementsScreenEl = document.getElementById('achievementsScreen');
+    const achievementsGridEl = document.getElementById('achievementsGrid');
+    const achievementsProgressEl = document.getElementById('achievementsProgress');
+
+    function renderAchievements() {
+        achievementsGridEl.innerHTML = '';
+        let unlockedCount = 0;
+        ACH_DEFS.forEach(def => {
+            const unlocked = !!unlockedAchievements[def.id];
+            if (unlocked) unlockedCount++;
+            const card = document.createElement('div');
+            card.className = 'ach-card ' + (unlocked ? 'unlocked' : 'locked');
+            const icon = document.createElement('div');
+            icon.className = 'ach-icon';
+            icon.textContent = unlocked ? def.icon : '🔒';
+            const body = document.createElement('div');
+            body.className = 'ach-body';
+            const nameEl = document.createElement('div');
+            nameEl.className = 'ach-name';
+            nameEl.textContent = def.name;
+            const descEl = document.createElement('div');
+            descEl.className = 'ach-desc';
+            descEl.textContent = def.desc;
+            body.appendChild(nameEl);
+            body.appendChild(descEl);
+            card.appendChild(icon);
+            card.appendChild(body);
+            achievementsGridEl.appendChild(card);
+        });
+        achievementsProgressEl.textContent = unlockedCount + ' / ' + ACH_DEFS.length + ' unlocked';
+    }
+
+    document.getElementById('achievementsBtn').addEventListener('click', () => {
+        achievementsScreenEl.classList.add('visible');
+        renderAchievements();
+    });
+    document.getElementById('achievementsCloseBtn').addEventListener('click', () => {
+        achievementsScreenEl.classList.remove('visible');
+    });
+
+    // Try auto-login on load
+    tryAutoLogin();
+
+    // ============ LEADERBOARD ============
+    const leaderboardScreen = document.getElementById('leaderboardScreen');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const leaderboardEmpty = document.getElementById('leaderboardEmpty');
+    const LEADERBOARD_KEY = 'ballCatcherLeaderboard';
+    const LEADERBOARD_MAX = 10;
+    const FB_URL = 'https://craft-combat-default-rtdb.firebaseio.com';
+    const FB_LB_PATH = '/goalkeeper/leaderboard';
+
+    function loadLocalLeaderboard() {
+        try {
+            const raw = localStorage.getItem(LEADERBOARD_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) { return []; }
+    }
+
+    function saveLocalLeaderboard(list) {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+    }
+
+    function submitScore(name, newScore) {
+        const entry = { name: name, score: newScore, date: Date.now() };
+
+        // Local cache (instant, offline-safe)
+        const list = loadLocalLeaderboard();
+        list.push(entry);
+        list.sort((a, b) => b.score - a.score);
+        saveLocalLeaderboard(list.slice(0, LEADERBOARD_MAX));
+
+        // Push to Firebase (shared across devices)
+        fetch(FB_URL + FB_LB_PATH + '.json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+        }).catch(() => {});
+    }
+
+    async function fetchCloudLeaderboard() {
+        const res = await fetch(FB_URL + FB_LB_PATH + '.json');
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        if (!data) return [];
+        return Object.values(data).filter(e => e && typeof e.name === 'string' && typeof e.score === 'number');
+    }
+
+    function renderLeaderboardList(list, highlightName, highlightScore) {
+        leaderboardList.innerHTML = '';
+        if (!list || list.length === 0) {
+            leaderboardEmpty.textContent = 'No scores yet — be the first!';
+            leaderboardEmpty.style.display = 'block';
+            leaderboardList.style.display = 'none';
+            return;
+        }
+        leaderboardEmpty.style.display = 'none';
+        leaderboardList.style.display = 'block';
+        let highlightedOnce = false;
+        list.forEach((entry, i) => {
+            const li = document.createElement('li');
+            const rankClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+            if (rankClass) li.classList.add(rankClass);
+            if (!highlightedOnce && highlightName != null &&
+                entry.name === highlightName && entry.score === highlightScore) {
+                li.classList.add('you');
+                highlightedOnce = true;
+            }
+            const rank = document.createElement('span');
+            rank.className = 'rank';
+            rank.textContent = '#' + (i + 1);
+            const nameEl = document.createElement('span');
+            nameEl.className = 'name';
+            nameEl.textContent = entry.name;
+            const scoreEl = document.createElement('span');
+            scoreEl.className = 'score';
+            scoreEl.textContent = entry.score;
+            li.appendChild(rank);
+            li.appendChild(nameEl);
+            li.appendChild(scoreEl);
+            leaderboardList.appendChild(li);
+        });
+    }
+
+    async function openLeaderboard(highlightName, highlightScore) {
+        leaderboardScreen.classList.add('visible');
+        leaderboardList.innerHTML = '';
+        leaderboardList.style.display = 'none';
+        leaderboardEmpty.textContent = 'Loading…';
+        leaderboardEmpty.style.display = 'block';
+        try {
+            const cloud = await fetchCloudLeaderboard();
+            cloud.sort((a, b) => b.score - a.score);
+            renderLeaderboardList(cloud.slice(0, LEADERBOARD_MAX), highlightName, highlightScore);
+        } catch (e) {
+            const local = loadLocalLeaderboard();
+            renderLeaderboardList(local, highlightName, highlightScore);
+            if (local.length === 0) {
+                leaderboardEmpty.textContent = 'Offline — no cached scores';
+                leaderboardEmpty.style.display = 'block';
+            }
+        }
+    }
+    function closeLeaderboard() {
+        leaderboardScreen.classList.remove('visible');
+    }
+
+    document.getElementById('leaderboardBtn').addEventListener('click', () => openLeaderboard());
+    document.getElementById('leaderboardBtn').addEventListener('touchend', (e) => { e.preventDefault(); openLeaderboard(); });
+    document.getElementById('leaderboardBtn2').addEventListener('click', () => openLeaderboard());
+    document.getElementById('leaderboardBtn2').addEventListener('touchend', (e) => { e.preventDefault(); openLeaderboard(); });
+    document.getElementById('leaderboardCloseBtn').addEventListener('click', closeLeaderboard);
+    document.getElementById('leaderboardCloseBtn').addEventListener('touchend', (e) => { e.preventDefault(); closeLeaderboard(); });
+
+    // Pause button + pause-screen buttons
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+        if (gameState === 'playing') pauseGame();
+        else if (gameState === 'paused') resumeGame();
+    });
+    document.getElementById('pauseBtn').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (gameState === 'playing') pauseGame();
+        else if (gameState === 'paused') resumeGame();
+    });
+    document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+    document.getElementById('resumeBtn').addEventListener('touchend', (e) => { e.preventDefault(); resumeGame(); });
+    document.getElementById('endGameBtn').addEventListener('click', () => endGame(false));
+    document.getElementById('endGameBtn').addEventListener('touchend', (e) => { e.preventDefault(); endGame(false); });
+
+    // How to Play
+    const howToPlayScreen = document.getElementById('howToPlayScreen');
+    document.getElementById('howToPlayBtn').addEventListener('click', () => { howToPlayScreen.classList.add('visible'); });
+    document.getElementById('howToPlayBtn').addEventListener('touchend', (e) => { e.preventDefault(); howToPlayScreen.classList.add('visible'); });
+    document.getElementById('howToPlayBtn2').addEventListener('click', () => { howToPlayScreen.classList.add('visible'); });
+    document.getElementById('howToPlayBtn2').addEventListener('touchend', (e) => { e.preventDefault(); howToPlayScreen.classList.add('visible'); });
+    document.getElementById('gotItBtn').addEventListener('click', () => { howToPlayScreen.classList.remove('visible'); });
+    document.getElementById('gotItBtn').addEventListener('touchend', (e) => { e.preventDefault(); howToPlayScreen.classList.remove('visible'); });
+
+    // ============ INPUT ============
+    const keys = {};
+    window.addEventListener('keydown', (e) => {
+        keys[e.key] = true;
+        touchTarget = null;
+
+        if (e.key === 'Enter' && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            if (gameState === 'home' && username) {
+                tryStartGame();
+            } else if (gameState === 'gameover') {
+                startGame();
+            }
+        }
+
+        if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+            if (gameState === 'playing') pauseGame();
+            else if (gameState === 'paused') resumeGame();
+        }
+    });
+    window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+    // Prevent scrolling
+    window.addEventListener('keydown', (e) => {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    // ============ TOUCH INPUT ============
+    function screenToWorld(sx, sy) {
+        // Map screen coordinates to 3D world XZ plane
+        const ndcX = (sx / window.innerWidth) * 2 - 1;
+        const ndcY = -(sy / window.innerHeight) * 2 + 1;
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const target = new THREE.Vector3();
+        raycaster.ray.intersectPlane(groundPlane, target);
+        return target;
+    }
+
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        if (gameState === 'playing') {
+            const world = screenToWorld(touch.clientX, touch.clientY);
+            if (world) touchTarget = { x: world.x, z: world.z };
+        } else if (gameState === 'paused') {
+            resumeGame();
+        }
+    }, { passive: false });
+
+    renderer.domElement.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (gameState === 'playing') {
+            const touch = e.touches[0];
+            const world = screenToWorld(touch.clientX, touch.clientY);
+            if (world) touchTarget = { x: world.x, z: world.z };
+        }
+    }, { passive: false });
+
+    renderer.domElement.addEventListener('touchend', (e) => { e.preventDefault(); }, { passive: false });
+
+    // ============ MOUSE INPUT ============
+    let mouseDown = false;
+    renderer.domElement.addEventListener('mousedown', (e) => {
+        mouseDown = true;
+        if (gameState === 'playing') {
+            const world = screenToWorld(e.clientX, e.clientY);
+            if (world) touchTarget = { x: world.x, z: world.z };
+        }
+    });
+    renderer.domElement.addEventListener('mousemove', (e) => {
+        if (mouseDown && gameState === 'playing') {
+            const world = screenToWorld(e.clientX, e.clientY);
+            if (world) touchTarget = { x: world.x, z: world.z };
+        }
+    });
+    window.addEventListener('mouseup', () => { mouseDown = false; });
+
+    // ============ GAME FUNCTIONS ============
+    function endGame(lostAllLives) {
+        const isNewBest = score > highScore;
+        if (isNewBest) {
+            highScore = score;
+            localStorage.setItem('ballCatcherHighScore', highScore);
+        }
+        if (username && score > 0) {
+            submitScore(username, score);
+            if (isNewBest) saveUserBest();
+        }
+        if (challengeContext) {
+            const ctx = challengeContext;
+            recordChallengeResult(ctx.id, score);
+            challengeContext = null;
+            challengeTargetHUDEl.classList.remove('visible');
+            const beat = score > ctx.target;
+            if (beat) statsOnChallengeWon();
+            const msg = beat
+                ? '🏆 You beat ' + ctx.from + '\'s ' + ctx.target + '!'
+                : 'Got ' + score + ' / ' + ctx.target + ' — try again';
+            setTimeout(() => showCommentary(msg), 200);
+            refreshChallengeBadge();
+        }
+        statsOnGameEnd(score);
+        if (h2h && h2h.state === 'live' && !h2hLastDoneSent) {
+            h2hLastDoneSent = true;
+            pushH2HDone(score);
+            gameOverScreen.classList.add('hidden');
+            hudEl.classList.add('hidden');
+            showH2HOverlay(
+                '<h2>You finished!</h2>' +
+                '<div class="h2h-sub">Your score: <b style="color:#ffcc02">' + score + '</b></div>' +
+                '<div class="h2h-sub">Waiting for ' + h2h.opponent + ' to finish…</div>' +
+                '<div class="h2h-countdown">⏳</div>'
+            );
+        }
+        gameState = 'gameover';
+        hudEl.classList.add('hidden');
+        pauseScreen.classList.add('hidden');
+        playerMesh.visible = false;
+        ball.active = false;
+        ballMesh.visible = false;
+        ballShadow.visible = false;
+        finalScoreEl.textContent = 'Score: ' + score;
+        finalHighScoreEl.textContent = 'High Score: ' + highScore;
+        homeHighScoreEl.textContent = 'High Score: ' + highScore;
+        gameOverScreen.classList.remove('hidden');
+        playGameOver();
+        if (lostAllLives) {
+            showCommentary(gameOverComments[Math.floor(Math.random() * gameOverComments.length)]);
+            playCommentatorDisappointed();
+        }
+    }
+
+    function pauseGame() {
+        if (gameState === 'playing' && canPause && !ball.active) {
+            gameState = 'paused';
+            pauseScreen.classList.remove('hidden');
+            updatePauseBtn();
+        }
+    }
+
+    function resumeGame() {
+        if (gameState === 'paused') {
+            gameState = 'playing';
+            pauseScreen.classList.add('hidden');
+            lastTime = performance.now();
+            updatePauseBtn();
+        }
+    }
+
+    function updatePauseBtn() {
+        const btn = document.getElementById('pauseBtn');
+        if (gameState === 'paused') {
+            btn.textContent = '▶';
+            btn.setAttribute('aria-label', 'Resume');
+            btn.disabled = false;
+        } else {
+            btn.textContent = '⏸';
+            btn.setAttribute('aria-label', 'Pause');
+            btn.disabled = !(gameState === 'playing' && canPause && !ball.active);
+        }
+    }
+
+    function startGame() {
+        h2hLastScoreSent = -1;
+        h2hLastDoneSent = false;
+        statsOnGameStart();
+        score = 0;
+        lives = 3;
+        player.x = 0;
+        player.z = 0;
+        player.prevX = 0;
+        player.prevZ = 0;
+        player.speed = BASE_PLAYER_SPEED;
+        ball.active = false;
+        ballMesh.visible = false;
+        ballShadow.visible = false;
+        playerMesh.visible = true;
+        kickTimer = 0;
+        kickPhase = 'none';
+        ballHeld = false;
+        rightLegPivot.rotation.x = 0;
+        saveStreak = 0;
+        commentaryTimer = 0;
+        commentaryEl.classList.remove('visible');
+        gameState = 'playing';
+        canPause = true;
+        waitTimer = getInterval(2750);
+        waitDuration = waitTimer;
+        lastTime = performance.now();
+
+        // Show HUD, hide screens
+        playerNameEl.textContent = username ? '👤 ' + username : '';
+        hudEl.classList.remove('hidden');
+        homeScreen.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        pauseScreen.classList.add('hidden');
+
+        updateHUD();
+    }
+
+    function getDifficultyMultiplier() {
+        return 1 + score * 0.15;
+    }
+
+    function getInterval(base) {
+        // Interval shrinks as score increases, minimum 800ms
+        return Math.max(800, base / getDifficultyMultiplier());
+    }
+
+    function spawnBall() {
+        const speedMult = getDifficultyMultiplier();
+        const speed = BASE_BALL_SPEED * speedMult;
+
+        // Ball always spawns ahead of the field (front edge) and flies toward the goal
+        ball.x = (spawnRng() - 0.5) * (FIELD_WIDTH - 4);
+        ball.z = -FIELD_DEPTH / 2 - 6;
+        ball.y = BALL_RADIUS_3D + 0.5;
+
+        // Aim toward the goal area (back of field) with some randomness
+        const targetX = (spawnRng() - 0.5) * GOAL_WIDTH;
+        const targetZ = FIELD_DEPTH / 2 + 1;
+        const dx = targetX - ball.x;
+        const dz = targetZ - ball.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        ball.vx = (dx / dist) * speed;
+        ball.vy = 0;
+        ball.vz = (dz / dist) * speed;
+
+        ball.active = true;
+        ball.enteredField = false;
+        ball.rebounded = false;
+        ballMesh.visible = true;
+        ballShadow.visible = true;
+    }
+
+    function updatePlayer(dt) {
+        player.prevX = player.x;
+        player.prevZ = player.z;
+
+        const speedMult = getDifficultyMultiplier();
+        player.speed = BASE_PLAYER_SPEED * speedMult;
+        const moveAmount = player.speed * dt * 60;
+
+        // Keyboard
+        if (keys['ArrowLeft'] || keys['Left']) player.x -= moveAmount;
+        if (keys['ArrowRight'] || keys['Right']) player.x += moveAmount;
+        if (keys['ArrowUp'] || keys['Up']) player.z -= moveAmount;
+        if (keys['ArrowDown'] || keys['Down']) player.z += moveAmount;
+
+        // Touch
+        if (touchTarget) {
+            const dx = touchTarget.x - player.x;
+            const dz = touchTarget.z - player.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+            if (dist > 0.1) {
+                const step = Math.min(moveAmount, dist);
+                player.x += (dx / dist) * step;
+                player.z += (dz / dist) * step;
+            } else {
+                player.x = touchTarget.x;
+                player.z = touchTarget.z;
+                touchTarget = null;
+            }
+        }
+
+        // Boundaries — player can move across the whole field
+        const halfW = FIELD_WIDTH / 2 - PLAYER_SIZE / 2;
+        const halfD = FIELD_DEPTH / 2 - PLAYER_SIZE / 2;
+        if (player.x < -halfW) player.x = -halfW;
+        if (player.x > halfW) player.x = halfW;
+        if (player.z < -halfD) player.z = -halfD;
+        if (player.z > halfD) player.z = halfD;
+
+        // Update mesh
+        playerMesh.position.x = player.x;
+        playerMesh.position.z = player.z;
+    }
+
+    function updateKickAnimation(dt) {
+        if (kickPhase === 'none') {
+            rightLegPivot.rotation.x = 0;
+            return;
+        }
+
+        kickTimer -= dt;
+        if (kickTimer < 0) kickTimer = 0;
+
+        if (kickPhase === 'windup') {
+            // Leg swings forward — ball held at player's foot
+            const t = 1.0 - (kickTimer / KICK_WINDUP);  // 0 -> 1
+            rightLegPivot.rotation.x = KICK_ANGLE * t;
+
+            // Hold ball near the player's kicking foot
+            if (ballHeld) {
+                ball.x = player.x + 0.12 + Math.sin(-KICK_ANGLE * t) * 0.5;
+                ball.z = player.z - Math.cos(-KICK_ANGLE * t) * 0.5;
+                ball.y = BALL_RADIUS_3D + 0.1;
+                ballMesh.position.set(ball.x, ball.y, ball.z);
+                ballShadow.position.x = ball.x;
+                ballShadow.position.z = ball.z;
+            }
+
+            if (kickTimer <= 0) {
+                // Leg reached peak — launch the ball!
+                kickPhase = 'contact';
+                kickTimer = KICK_CONTACT;
+                if (ballHeld) {
+                    ball.vx = kickBallVx;
+                    ball.vz = kickBallVz;
+                    ball.vy = kickBallVy;
+                    // Push ball out ahead so it clears collision zone
+                    const kickDir = Math.sqrt(kickBallVx * kickBallVx + kickBallVz * kickBallVz);
+                    if (kickDir > 0.01) {
+                        ball.x = player.x + (kickBallVx / kickDir) * (PLAYER_SIZE / 2 + BALL_RADIUS_3D + 0.3);
+                        ball.z = player.z + (kickBallVz / kickDir) * (PLAYER_SIZE / 2 + BALL_RADIUS_3D + 0.3);
+                    }
+                    ballMesh.position.set(ball.x, ball.y, ball.z);
+                    ballShadow.position.x = ball.x;
+                    ballShadow.position.z = ball.z;
+                    ballHeld = false;
+                    playKick();
+                }
+            }
+        } else if (kickPhase === 'contact') {
+            // Brief hold at full extension
+            rightLegPivot.rotation.x = KICK_ANGLE;
+            if (kickTimer <= 0) {
+                kickPhase = 'follow';
+                kickTimer = KICK_FOLLOW;
+            }
+        } else if (kickPhase === 'follow') {
+            // Leg swings back to resting position
+            const t = kickTimer / KICK_FOLLOW;  // 1 -> 0
+            rightLegPivot.rotation.x = KICK_ANGLE * t;
+            if (kickTimer <= 0) {
+                kickPhase = 'none';
+                rightLegPivot.rotation.x = 0;
+            }
+        }
+    }
+
+    function updateBall(dt) {
+        if (!ball.active) return;
+        if (ballHeld) return; // ball is held at player's foot during kick animation
+
+        // Apply gravity after rebound
+        if (ball.rebounded) {
+            ball.vy -= 0.005 * dt * 60;
+            if (ball.y <= BALL_RADIUS_3D && ball.vy < 0) {
+                ball.y = BALL_RADIUS_3D;
+                ball.vy = 0;
+            }
+        }
+
+        ball.x += ball.vx * dt * 60;
+        ball.y += ball.vy * dt * 60;
+        ball.z += ball.vz * dt * 60;
+
+        // Update mesh
+        ballMesh.position.set(ball.x, ball.y, ball.z);
+        ballMesh.rotation.x += dt * 5;
+        ballMesh.rotation.z += dt * 3;
+
+        // Shadow follows on ground
+        ballShadow.position.x = ball.x;
+        ballShadow.position.z = ball.z;
+
+        // Collision: distance between ball center and player center (XZ plane)
+        const dx = ball.x - player.x;
+        const dz = ball.z - player.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const catchDist = PLAYER_SIZE / 2 + BALL_RADIUS_3D;
+
+        if (dist <= catchDist && ball.y < PLAYER_SIZE + BALL_RADIUS_3D && !ball.rebounded) {
+            // Caught — start kick animation, hold ball at foot
+            score++;
+            ball.rebounded = true;
+            updateHUD();
+
+            // Calculate rebound velocity but DON'T apply yet — store it
+            const currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vz * ball.vz);
+            const pvx = player.x - player.prevX;
+            const pvz = player.z - player.prevZ;
+            const pSpeed = Math.sqrt(pvx * pvx + pvz * pvz);
+
+            if (pSpeed > 0.001) {
+                kickBallVx = (pvx / pSpeed) * currentSpeed * 1.2;
+                kickBallVz = (pvz / pSpeed) * currentSpeed * 1.2;
+            } else if (dist > 0.01) {
+                kickBallVx = (dx / dist) * currentSpeed * 1.2;
+                kickBallVz = (dz / dist) * currentSpeed * 1.2;
+            } else {
+                kickBallVx = 0;
+                kickBallVz = -currentSpeed * 1.2;
+            }
+            kickBallVy = 0.08;
+
+            // Stop ball movement and hold it at player
+            ball.vx = 0;
+            ball.vy = 0;
+            ball.vz = 0;
+            ballHeld = true;
+
+            // Play crowd sounds immediately on catch
+            playCrowdCheer();
+            playThunderClapStorm();
+
+            // Commentary on save
+            saveStreak++;
+            statsOnSave();
+            if (saveStreak >= 4 && Math.random() < 0.6) {
+                showCommentary(streakComments[Math.floor(Math.random() * streakComments.length)]);
+                playCommentatorAmazed();
+            } else {
+                showCommentary(saveComments[Math.floor(Math.random() * saveComments.length)]);
+                playCommentatorExcited();
+            }
+
+            // Start kick animation — kick sound plays at leg contact
+            kickPhase = 'windup';
+            kickTimer = KICK_WINDUP;
+
+            // Push ball to foot position
+            if (dist > 0.01) {
+                ball.x = player.x + (dx / dist) * (catchDist * 0.6);
+                ball.z = player.z + (dz / dist) * (catchDist * 0.6);
+            } else {
+                ball.z = player.z - (catchDist * 0.6);
+            }
+        }
+
+        // Missed — ball enters the goal (between the posts, past the goal line)
+        const inGoalX = ball.x > -GOAL_WIDTH / 2 && ball.x < GOAL_WIDTH / 2;
+        const pastGoalLine = ball.z > FIELD_DEPTH / 2;
+        const belowCrossbar = ball.y < GOAL_HEIGHT;
+
+        if (ball.active && inGoalX && pastGoalLine && belowCrossbar) {
+            lives = Math.max(0, lives - 1);
+            ball.active = false;
+            ballMesh.visible = false;
+            ballShadow.visible = false;
+            updateHUD();
+            playGoal();
+            saveStreak = 0; // reset streak on goal
+            showCommentary(goalComments[Math.floor(Math.random() * goalComments.length)]);
+            playCommentatorDisappointed();
+
+            if (lives <= 0) {
+                endGame(true);
+            } else {
+                canPause = false;
+                waitTimer = getInterval(2500);
+                waitDuration = waitTimer;
+            }
+        }
+
+        // Ball went off screen entirely (missed the goal too) — no life lost, just send new ball
+        const offMargin = 10;
+        if (ball.active && (
+            ball.z > FIELD_DEPTH / 2 + offMargin ||
+            ball.x < -FIELD_WIDTH / 2 - offMargin || ball.x > FIELD_WIDTH / 2 + offMargin ||
+            ball.z < -FIELD_DEPTH / 2 - offMargin)) {
+            ball.active = false;
+            ballMesh.visible = false;
+            ballShadow.visible = false;
+            canPause = true;
+            waitTimer = getInterval(2750);
+            waitDuration = waitTimer;
+        }
+    }
+
+    function updateHUD() {
+        scoreEl.textContent = 'Score: ' + score;
+        for (let i = 0; i < 3; i++) {
+            if (i < lives) {
+                heartsEl[i].textContent = '❤️';
+                heartsEl[i].className = 'heart';
+            } else {
+                heartsEl[i].textContent = '🖤';
+                heartsEl[i].className = 'heart lost';
+            }
+        }
+        if (h2h && h2h.state === 'live' && score !== h2hLastScoreSent) {
+            h2hLastScoreSent = score;
+            pushH2HScore(score);
+        }
+    }
+
+    function updateCenterMessage() {
+        centerMsg.innerHTML = '';
+    }
+
+    // ============ GAME LOOP ============
+    function gameLoop(timestamp) {
+        if (lastTime === 0) lastTime = timestamp;
+        const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+        lastTime = timestamp;
+
+        // Always update commentary (so it works on game over screen too)
+        updateCommentary(dt);
+
+        if (gameState === 'playing') {
+            updatePlayer(dt);
+            updateKickAnimation(dt);
+
+            // Wait timer
+            if (!ball.active && waitTimer > 0) {
+                waitTimer -= dt * 1000;
+                if (waitTimer <= 0) {
+                    waitTimer = 0;
+                    canPause = false;
+                    spawnBall();
+                }
+            }
+
+            updateBall(dt);
+            updateCenterMessage();
+        }
+
+        updatePauseBtn();
+
+        // Always render the 3D scene
+        renderer.render(scene, camera);
+        requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
