@@ -100,6 +100,33 @@
         }
         #howToPlayScreen li span { color: #ffcc02; font-weight: bold; }
 
+        /* Customize screen */
+        #customizeScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 30; background: rgba(26, 26, 46, 0.92); pointer-events: auto;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        #customizeScreen.visible { display: flex; }
+        #customizeScreen h2 { color: #e0e0e0; font-size: 36px; margin-bottom: 20px; }
+        .custom-section {
+            width: 100%; max-width: 460px; margin-bottom: 18px;
+        }
+        .custom-label {
+            color: #ffcc02; font-size: 18px; font-weight: bold;
+            margin-bottom: 8px; text-align: left;
+        }
+        .swatch-row {
+            display: flex; flex-wrap: wrap; gap: 10px;
+        }
+        .swatch {
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 3px solid transparent; cursor: pointer;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+        .swatch:hover { transform: scale(1.1); }
+        .swatch.active { border-color: #fff; transform: scale(1.1); }
+
         /* Commentary popup */
         #commentary {
             position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
@@ -133,7 +160,34 @@
     <h1>Goalkeeper</h1>
     <div class="highscore" id="homeHighScore">High Score: 0</div>
     <button class="btn" id="playBtn">Play</button>
+    <button class="btn-small" id="customizeBtn">Customize</button>
     <button class="btn-small" id="howToPlayBtn">How to Play</button>
+</div>
+
+<!-- Customize Screen -->
+<div id="customizeScreen">
+    <h2>Customize Player</h2>
+    <div class="custom-section">
+        <div class="custom-label">Shirt</div>
+        <div class="swatch-row" id="shirtSwatches"></div>
+    </div>
+    <div class="custom-section">
+        <div class="custom-label">Shorts</div>
+        <div class="swatch-row" id="shortsSwatches"></div>
+    </div>
+    <div class="custom-section">
+        <div class="custom-label">Hair</div>
+        <div class="swatch-row" id="hairSwatches"></div>
+    </div>
+    <div class="custom-section">
+        <div class="custom-label">Skin Tone</div>
+        <div class="swatch-row" id="skinSwatches"></div>
+    </div>
+    <div class="custom-section">
+        <div class="custom-label">Sneakers</div>
+        <div class="swatch-row" id="sneakerSwatches"></div>
+    </div>
+    <button class="btn" id="customizeDoneBtn" style="margin-top: 15px;">Done</button>
 </div>
 
 <!-- How to Play Screen -->
@@ -633,6 +687,30 @@
     const sneakerMat = new THREE.MeshStandardMaterial({ color: 0xE53935, roughness: 0.5 });
     // Soles (white)
     const soleMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.6 });
+
+    // ============ CHARACTER CUSTOMIZATION ============
+    const PALETTES = {
+        shirt:   [0x2196F3, 0xE53935, 0x43A047, 0xFDD835, 0xFF8F00, 0x8E24AA, 0xF5F5F5, 0x222222],
+        shorts:  [0xD2B48C, 0x222222, 0x1A237E, 0xF5F5F5, 0xC62828, 0x616161],
+        hair:    [0x3E2723, 0x1A1A1A, 0xFFD54F, 0x6D4C41, 0xBF360C, 0xE0E0E0],
+        skin:    [0xFFDBAC, 0xF1C27D, 0xE0AC69, 0xC68642, 0x8D5524],
+        sneaker: [0xE53935, 0x2196F3, 0x222222, 0xF5F5F5, 0xFDD835, 0x43A047]
+    };
+    const DEFAULT_CUSTOM = { shirt: 0x2196F3, shorts: 0xD2B48C, hair: 0x3E2723, skin: 0xFFDBAC, sneaker: 0xE53935 };
+    let playerCustom = { ...DEFAULT_CUSTOM };
+    try {
+        const saved = JSON.parse(localStorage.getItem('goalkeeperCustom'));
+        if (saved) playerCustom = { ...DEFAULT_CUSTOM, ...saved };
+    } catch (e) {}
+
+    function applyCustom() {
+        tshirtMat.color.setHex(playerCustom.shirt);
+        kidShortsMat.color.setHex(playerCustom.shorts);
+        hairMat.color.setHex(playerCustom.hair);
+        kidSkinMat.color.setHex(playerCustom.skin);
+        sneakerMat.color.setHex(playerCustom.sneaker);
+    }
+    applyCustom();
 
     // Torso (smaller, blue t-shirt)
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.24, 0.5, 8), tshirtMat);
@@ -1315,6 +1393,41 @@
     document.getElementById('howToPlayBtn2').addEventListener('touchend', (e) => { e.preventDefault(); howToPlayScreen.classList.add('visible'); });
     document.getElementById('gotItBtn').addEventListener('click', () => { howToPlayScreen.classList.remove('visible'); });
     document.getElementById('gotItBtn').addEventListener('touchend', (e) => { e.preventDefault(); howToPlayScreen.classList.remove('visible'); });
+
+    // ============ CUSTOMIZE UI ============
+    const customizeScreen = document.getElementById('customizeScreen');
+    const SWATCH_TARGETS = {
+        shirt: 'shirtSwatches', shorts: 'shortsSwatches', hair: 'hairSwatches',
+        skin: 'skinSwatches', sneaker: 'sneakerSwatches'
+    };
+    function buildSwatches() {
+        for (const key in SWATCH_TARGETS) {
+            const row = document.getElementById(SWATCH_TARGETS[key]);
+            row.innerHTML = '';
+            PALETTES[key].forEach(hex => {
+                const sw = document.createElement('div');
+                sw.className = 'swatch' + (playerCustom[key] === hex ? ' active' : '');
+                sw.style.background = '#' + hex.toString(16).padStart(6, '0');
+                const pick = () => {
+                    playerCustom[key] = hex;
+                    applyCustom();
+                    localStorage.setItem('goalkeeperCustom', JSON.stringify(playerCustom));
+                    row.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                    sw.classList.add('active');
+                };
+                sw.addEventListener('click', pick);
+                sw.addEventListener('touchend', (e) => { e.preventDefault(); pick(); });
+                row.appendChild(sw);
+            });
+        }
+    }
+    buildSwatches();
+    const openCustomize = () => { buildSwatches(); customizeScreen.classList.add('visible'); };
+    const closeCustomize = () => { customizeScreen.classList.remove('visible'); };
+    document.getElementById('customizeBtn').addEventListener('click', openCustomize);
+    document.getElementById('customizeBtn').addEventListener('touchend', (e) => { e.preventDefault(); openCustomize(); });
+    document.getElementById('customizeDoneBtn').addEventListener('click', closeCustomize);
+    document.getElementById('customizeDoneBtn').addEventListener('touchend', (e) => { e.preventDefault(); closeCustomize(); });
 
     // ============ INPUT ============
     const keys = {};
